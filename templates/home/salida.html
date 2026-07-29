@@ -2,40 +2,91 @@
 
 {% block content %}
 
-<h2>Correos Salientes</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Correos salientes</h2>
 
-<table class="table table-striped">
+    <form method="post" action="{% url 'home:sincronizar_correo' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
 
-<thead class="table-success">
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-arrow-repeat"></i> Sincronizar Gmail
+        </button>
+    </form>
+</div>
 
-<tr>
+<div class="table-responsive">
+    <table id="tablaSalida" class="table table-striped table-bordered table-hover w-100">
+        <thead class="table-success">
+            <tr>
+                <th>Consecutivo</th>
+                <th>Fecha</th>
+                <th>Destino</th>
+                <th>Asunto</th>
+            </tr>
+        </thead>
 
-<th>Consecutivo</th>
+        <tbody>
+        {% for correo in comunicaciones %}
+            <tr>
+                <td>{{ correo.consecutivo|default:"—" }}</td>
+                <td>{{ correo.fecha|date:"d/m/Y H:i" }}</td>
+                <td>{{ correo.destinatarios|default:"—" }}</td>
+                <td>
+                    {{ correo.asunto|default:"(Sin asunto)" }}
 
-<th>Fecha</th>
+                    {% if correo.tiene_adjuntos %}
+                        <i class="bi bi-paperclip"></i>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">
+                    Sin registros. Use "Sincronizar Gmail" para cargarlos.
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-<th>Destino</th>
+{% endblock %}
 
-<th>Asunto</th>
+{% block extra_css %}
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
+{% endblock %}
 
-</tr>
+{% block extra_js %}
 
-</thead>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
 
-<tbody>
+<script>
+$(document).ready(function () {
 
-<tr>
+    $('#tablaSalida').DataTable({
 
-<td colspan="4" class="text-center">
+        responsive: true,
 
-Sin registros
+        pageLength: 10,
 
-</td>
+        lengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, "Todos"]
+        ],
 
-</tr>
+        order: [[1, 'desc']],
 
-</tbody>
+        language: {
+    url: 'https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json'
+    }
 
-</table>
+    });
+
+});
+</script>
 
 {% endblock %}

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Responsable(models.Model):
     nombre = models.CharField(max_length=200)
-    correo = models.EmailField(unique=True)
+    correo = models.EmailField()
     cargo = models.CharField(max_length=150, blank=True)
     dependencia = models.CharField(max_length=150)
     activo = models.BooleanField(default=True)
@@ -158,7 +158,7 @@ class Comunicacion(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Comunicación"
+        verbose_name = "ComunicaciÃ³n"
         verbose_name_plural = "Comunicaciones"
         ordering = ["-fecha"]
 

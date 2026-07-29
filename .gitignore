@@ -1,0 +1,5 @@
+__pycache__/
+config/google_client_secret.json
+config/google_token.json
+media/adjuntos/
+.venv/

@@ -1,13 +1,13 @@
-class DashboardService:
+from applications.comunicaciones.models import Comunicacion
 
+
+class DashboardService:
     @staticmethod
     def obtener_indicadores():
-
+        comunicaciones = Comunicacion.objects.all()
         return {
-
-            "entrantes": 0,
-            "salientes": 0,
-            "radicados": 0,
-            "pendientes": 0
-
+            "entrantes": comunicaciones.filter(tipo="ENTRADA").count(),
+            "salientes": comunicaciones.filter(tipo="SALIDA").count(),
+            "radicados": comunicaciones.exclude(radicado__isnull=True).exclude(radicado="").count(),
+            "pendientes": comunicaciones.exclude(estado="FINALIZADO").count(),
         }

@@ -1,41 +1,116 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Correos entrantes</h2>
 
-<h2>Correos Entrantes</h2>
+    <form method="post" action="{% url 'home:sincronizar_correo' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-arrow-repeat"></i> Sincronizar Gmail
+        </button>
+    </form>
+</div>
 
-<table class="table table-bordered table-hover">
+<div class="table-responsive">
+    <table id="tablaCorreos" class="table table-striped table-bordered table-hover w-100">
+        <thead class="table-primary">
+            <tr>
+                <th>Radicado</th>
+                <th>Fecha</th>
+                <th>Remitente</th>
+                <th>Asunto</th>
+                <th>Estado</th>
+                <th>Delegado a</th>
+            </tr>
+        </thead>
 
-<thead class="table-primary">
-
+        <tbody>
+{% for correo in comunicaciones %}
 <tr>
 
-<th>Fecha</th>
+    <td>
+        {% if correo.radicado %}
+            <span class="badge text-bg-success">
+                {{ correo.radicado }}
+            </span>
+        {% else %}
+            —
+        {% endif %}
+    </td>
 
-<th>Remitente</th>
+    <td>{{ correo.fecha|date:"d/m/Y H:i" }}</td>
 
-<th>Asunto</th>
+    <td>{{ correo.remitente }}</td>
 
-<th>Estado</th>
+    <td>
+        {{ correo.asunto|default:"(Sin asunto)" }}
+
+        {% if correo.tiene_adjuntos %}
+            <i class="bi bi-paperclip"></i>
+        {% endif %}
+    </td>
+
+    <td>
+        <span class="badge text-bg-secondary">
+            {{ correo.get_estado_display }}
+        </span>
+    </td>
+
+    <td>
+        {% if correo.responsable %}
+            {{ correo.responsable.nombre }}
+        {% else %}
+            —
+        {% endif %}
+    </td>
 
 </tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td colspan="4" class="text-center">
-
-No existen registros
-
-</td>
-
-</tr>
-
+{% endfor %}
 </tbody>
+    </table>
+</div>
+{% endblock %}
 
-</table>
+
+{% block extra_css %}
+<link rel="stylesheet"
+href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $('#tablaCorreos').DataTable({
+
+        responsive: true,
+
+        pageLength: 10,
+
+        lengthMenu: [
+            [10,25,50,100,-1],
+            [10,25,50,100,"Todos"]
+        ],
+
+        order: [[0,'desc']],
+
+        language: {
+    url: 'https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json'
+        }
+
+    });
+
+});
+</script>
 
 {% endblock %}

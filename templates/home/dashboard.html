@@ -7,6 +7,7 @@
 Dashboard
 
 </h2>
+<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 <div class="row">
 
@@ -19,6 +20,7 @@ Dashboard
 <h5>Entrantes</h5>
 
 <h2>{{ entrantes }}</h2>
+<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -35,6 +37,7 @@ Dashboard
 <h5>Salientes</h5>
 
 <h2>{{ salientes }}</h2>
+<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -51,6 +54,7 @@ Dashboard
 <h5>Radicados</h5>
 
 <h2>{{ radicados }}</h2>
+<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -67,6 +71,7 @@ Dashboard
 <h5>Pendientes</h5>
 
 <h2>{{ pendientes }}</h2>
+<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 

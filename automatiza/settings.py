@@ -134,3 +134,12 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home:dashboard"
 
 LOGOUT_REDIRECT_URL = "login"
+import os
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+GMAIL_ACCOUNT = os.getenv("GMAIL_ACCOUNT", "js.caballero1@gmail.com").lower()
+GMAIL_CREDENTIALS_FILE = BASE_DIR / "config" / "google_client_secret.json"
+GMAIL_TOKEN_FILE = BASE_DIR / "config" / "google_token.json"
+LANGUAGE_CODE = "es-co"
+TIME_ZONE = "America/Bogota"
