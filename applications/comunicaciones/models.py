@@ -156,7 +156,12 @@ class Comunicacion(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     fecha_actualizacion = models.DateTimeField(auto_now=True)
-
+    evidencia = models.FileField(
+    upload_to="evidencias/",
+    blank=True,
+    null=True,
+    verbose_name="PDF Evidencia"
+)
     class Meta:
         verbose_name = "ComunicaciÃ³n"
         verbose_name_plural = "Comunicaciones"

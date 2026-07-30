@@ -10,7 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from .models import Comunicacion, Consecutivo, Historial, Regla
-
+from .pdf_service import generar_pdf
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 
@@ -73,13 +73,33 @@ def _cuerpo(payload):
 
 
 def _guardar_mensaje(servicio, resumen, tipo):
-    mensaje = servicio.users().messages().get(userId="me", id=resumen["id"], format="full").execute()
+    """
+    Descarga un mensaje de Gmail y lo guarda en la base de datos.
+    """
+
+    mensaje = (
+        servicio.users()
+        .messages()
+        .get(
+            userId="me",
+            id=resumen["id"],
+            format="full",
+        )
+        .execute()
+    )
+
     payload = mensaje.get("payload", {})
     headers = payload.get("headers", [])
-    fecha = parsedate_to_datetime(_cabecera(headers, "Date"))
+
+    fecha = parsedate_to_datetime(
+        _cabecera(headers, "Date")
+    )
+
     if timezone.is_naive(fecha):
         fecha = timezone.make_aware(fecha)
+
     cuerpo, tiene_adjuntos = _cuerpo(payload)
+
     datos = {
         "tipo": tipo,
         "fecha": fecha,
@@ -88,13 +108,18 @@ def _guardar_mensaje(servicio, resumen, tipo):
         "copia": _cabecera(headers, "Cc"),
         "asunto": _cabecera(headers, "Subject")[:500],
         "mensaje": cuerpo,
+        "gmail_id": mensaje["id"],
         "thread_id": mensaje.get("threadId", ""),
         "tiene_adjuntos": tiene_adjuntos,
         "es_leido": "UNREAD" not in mensaje.get("labelIds", []),
     }
-    objeto, creado = Comunicacion.objects.update_or_create(gmail_id=mensaje["id"], defaults=datos)
-    return creado
 
+    objeto, creado = Comunicacion.objects.update_or_create(
+        gmail_id=mensaje["id"],
+        defaults=datos,
+    )
+
+    return objeto, creado
 
 def _mensajes(servicio, etiqueta):
     pagina = None
@@ -137,47 +162,153 @@ def _radicar_si_aplica(comunicacion):
                 accion="Delegacion automatica actualizada",
                 descripcion=f"Regla: {regla.palabra}. Responsable: {regla.responsable.correo}.",
             )
+            generar_pdf(comunicacion)
         return False
     with transaction.atomic():
         consecutivo, _ = Consecutivo.objects.select_for_update().get_or_create(anio=comunicacion.fecha.year)
         consecutivo.ultimo += 1
         consecutivo.save(update_fields=["ultimo"])
         numero = f"{consecutivo.anio}-{consecutivo.ultimo:06d}"
+
         comunicacion.radicado = numero
-        comunicacion.consecutivo = numero
         comunicacion.responsable = regla.responsable
         comunicacion.estado = "DELEGADO"
         comunicacion.etiqueta = regla.palabra
-        comunicacion.save(update_fields=["radicado", "consecutivo", "responsable", "estado", "etiqueta", "fecha_actualizacion"])
+
+        comunicacion.save(
+            update_fields=[
+                "radicado",
+                "responsable",
+                "estado",
+                "etiqueta",
+                "fecha_actualizacion",
+            ]
+        )
+        
+
+        generar_pdf(comunicacion)   
+
         Historial.objects.create(
             comunicacion=comunicacion,
             accion="Delegacion automatica",
             descripcion=f"Regla: {regla.palabra}. Responsable: {regla.responsable.correo}.",
         )
-    return True
+    # Generar evidencia PDF
+        generar_pdf(comunicacion)    
+        return True
+def _generar_consecutivo_salida(comunicacion):
+    """Genera el consecutivo para un correo de salida."""
+
+    if comunicacion.tipo != "SALIDA":
+        return False
+
+    if comunicacion.consecutivo:
+        generar_pdf(comunicacion)
+        return False
+
+    with transaction.atomic():
+        consecutivo, _ = Consecutivo.objects.select_for_update().get_or_create(
+            anio=comunicacion.fecha.year
+        )
+
+        consecutivo.ultimo += 1
+        consecutivo.save(update_fields=["ultimo"])
+
+        anio = str(consecutivo.anio)[2:]
+        numero = f"N.1.014-{consecutivo.ultimo:04d}-{anio}"
+
+        comunicacion.consecutivo = numero
+
+        comunicacion.save(
+            update_fields=[
+                "consecutivo",
+                "fecha_actualizacion",
+            ]
+        )
+        
+
+        generar_pdf(comunicacion)
+
+        Historial.objects.create(
+            comunicacion=comunicacion,
+            accion="Consecutivo generado",
+            descripcion=f"Consecutivo asignado: {numero}",
+        )
+        # Generar evidencia PDF
+        generar_pdf(comunicacion)
+        return True
+
 def sincronizar_gmail():
-    """Importa solo correos desde el inicio del dia actual en Colombia."""
+    """
+    Sincroniza los correos de Gmail y:
+    - Radica automáticamente los correos de entrada.
+    - Genera automáticamente el consecutivo para los correos de salida.
+    """
+
     servicio = _servicio_gmail()
-    inicio_hoy = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
-    creados = actualizados = 0
-    for etiqueta, tipo in (("INBOX", "ENTRADA"), ("SENT", "SALIDA")):
+
+    inicio_hoy = timezone.localtime().replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    creados = 0
+    actualizados = 0
+
+    for etiqueta, tipo in (
+        ("INBOX", "ENTRADA"),
+        ("SENT", "SALIDA"),
+    ):
+
         for resumen in _mensajes(servicio, etiqueta):
-            comunicacion = Comunicacion.objects.filter(gmail_id=resumen["id"]).first()
+
+            comunicacion = Comunicacion.objects.filter(
+                gmail_id=resumen["id"]
+            ).first()
+
+            # ==========================
+            # YA EXISTE EN LA BASE
+            # ==========================
             if comunicacion:
+
                 if timezone.localtime(comunicacion.fecha) < inicio_hoy:
                     comunicacion.delete()
                     continue
-                _radicar_si_aplica(comunicacion)
+
+                if comunicacion.tipo == "ENTRADA":
+                    _radicar_si_aplica(comunicacion)
+
+                elif comunicacion.tipo == "SALIDA":
+                    _generar_consecutivo_salida(comunicacion)
+
                 actualizados += 1
                 continue
-            creado = _guardar_mensaje(servicio, resumen, tipo)
-            comunicacion = Comunicacion.objects.get(gmail_id=resumen["id"])
+
+            # ==========================
+            # NO EXISTE → CREAR
+            # ==========================
+
+            comunicacion, creado = _guardar_mensaje(
+                servicio,
+                resumen,
+                tipo,
+            )
+
             if timezone.localtime(comunicacion.fecha) < inicio_hoy:
                 comunicacion.delete()
                 continue
-            _radicar_si_aplica(comunicacion)
+
+            if comunicacion.tipo == "ENTRADA":
+                _radicar_si_aplica(comunicacion)
+
+            elif comunicacion.tipo == "SALIDA":
+                _generar_consecutivo_salida(comunicacion)
+
             if creado:
                 creados += 1
             else:
                 actualizados += 1
+
     return creados, actualizados
