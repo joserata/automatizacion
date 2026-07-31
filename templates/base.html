@@ -1,95 +1,365 @@
-<!DOCTYPE html>
-<html lang="es">
+{% load static %}
+<!doctype html>
+
+<html lang="es" data-bs-theme="light">
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
 
-    <title>RPA Comunicaciones</title>
+    <title>
+        {% block title %}
+            SGDEA
+        {% endblock %}
+    </title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1">
 
-    {% block extra_css %}{% endblock %}
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="https://gestionapp.medellin.unal.edu.co/cdn/assets/favicon.ico">
+
+    <!-- ========================================================= -->
+    <!-- KIT UNAL -->
+    <!-- ========================================================= -->
+
+    <link
+        rel="stylesheet"
+        href="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/css/kitUnal.min.css">
+
+    <link
+        rel="stylesheet"
+        href="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/css/themes/main.min.css">
+
+    <script
+        src="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/js/kitUnal.bundle.min.js">
+    </script>
+
+    <!-- Bootstrap Icons -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- CSS propio -->
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}
+    {% endblock %}
 
 </head>
 
-<body class="bg-light">
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-
-    <div class="container-fluid">
-
-        <a class="navbar-brand" href="{% url 'home:dashboard' %}">
-            RPA Comunicaciones
-        </a>
-
-        <button class="navbar-toggler"
-                data-bs-toggle="collapse"
-                data-bs-target="#menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="menu">
-
-            <ul class="navbar-nav ms-auto">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:dashboard' %}">Dashboard</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:entrada' %}">Entrada</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:salida' %}">Salida</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:reportes' %}">Reportes</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home:reglas' %}">Reglas</a>
-                </li>
-                <li class="nav-item">
-    <form method="post" action="{% url 'logout' %}" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-link nav-link border-0">
-            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-        </button>
-    </form>
-</li>
-
-            </ul>
-
+<body class="body bg-neutral-90 bg-opacity-70">
+    <header class="m-0 bg-opacity-100">
+        <div class="section-icon">
+            <div class="banner-container">
+                <a href="https://unal.edu.co/" target="_blank" rel="noopener" class="icon-link">
+                    <img src="https://gestionapp.medellin.unal.edu.co/cdn/assets/images/logo_unal_circle.png"
+                        alt="Escudo de UNAL" mime="image/png" type="image">
+                </a>
+            </div>
         </div>
 
+        <div id="divider-top"></div>
+
+        <div id="section-menu-middle">
+            <div class="padded-container">
+                <p id="name-aplication">Nombre de la aplicación</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="body gap-2 bg-opacity-100">
+        
+<nav class="navbar navbar-expand-xl bg-neutral-100" data-home="true" aria-label="Navegación">
+            <ul class="ms-auto navbar-nav flex-row">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="material-symbols-outlined" translate='no'>menu</span>
+                </button>
+                <div class="dropdown user-section user-section-primary avatar-primary">
+                    <div class="user-section-avatar avatar-mn" data-bs-toggle="dropdown" tabindex='0'
+                        aria-expanded="false">
+                        <div class="avatar avatar-mn"></div>
+                        <div class="user-section-indicator"></div>
+                    </div>
+
+                    <div class="user-section-menu dropdown-menu dropdown-menu-end">
+                        <div class="user-section-avatar-info">
+                            <div class="avatar avatar-mn" data-bs-toggle="dropdown" aria-expanded="false"></div>
+                            <div>
+                                <p class="fw-bold">Mercedes</p>
+                                <p>mmonsalvea</p>
+                            </div>
+                        </div>
+
+                        <hr class="hr bg-neutral-80" />
+
+                        <a class="user-section-menu-item">
+                            <div class="user-section-menu-item-content">
+                                <span class="material-symbols-outlined icon" translate='no'>settings</span>
+                                Configuración
+                            </div>
+                        </a>
+
+                        <a class="user-section-menu-item">
+                            <div class="user-section-menu-item-content">
+                                <span class="material-symbols-outlined icon" translate='no'>security</span>
+                                Usuarios
+                            </div>
+                        </a>
+
+
+                        <a class="user-section-menu-item">
+                            <div class="user-section-menu-item-content">
+                                <span class="material-symbols-outlined icon" translate='no'>construction</span>
+                                Herramientas
+                            </div>
+                        </a>
+
+                        <hr class="hr bg-neutral-80" />
+
+                        <form id="logoutForm" method="post" action="{% url 'logout' %}" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<a href="#"
+   class="user-section-menu-item d-flex gap-3"
+   onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+
+    <div class="user-section-menu-item-content">
+        Cerrar Sesión
     </div>
 
-</nav>
+</a>
 
-<div class="container mt-4">
+                    </div>
+                </div>
+                <button class="navbar-toggler" id="side_navigation" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#sidenavMenu" aria-controls="sidenavMenu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="material-symbols-outlined" translate='no'>side_navigation</span>
+                </button>
+            </ul>
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse w-100" id="navbarSupportedContent">
+                    <ul class="navbar-nav nav nav-neutral ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">
+                                <span class="material-symbols-outlined" translate='no'>home</span>
+                                Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="material-symbols-outlined" translate='no'>notifications</span>
+                                Notificaciones
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="material-symbols-outlined" translate='no'>mail</span>
+                                Mensajes
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+        
+        <div class="row">
+
+            <!-- ================================================= -->
+            <!-- SIDEBAR -->
+            <!-- ================================================= -->
+
+            <div class="row d-flex flex-column flex-xl-row flex-grow-1 row m-0 p-4 p-xl-8 pt-0 pt-xl-0 g-0 g-xl-4">
+            <!--SIDENAV-->
+            <div class="col-12 col-xl-2">
+                <nav class="navbar navbar-expand-xl m-0 p-0 p-lg-auto d-block h-xl-100"
+                    style="--bs-navbar-min-height: 0;">
+                    <div class="container-fluid p-0 h-100">
+                        <div class="collapse navbar-collapse w-100 h-100 m-0" id="sidenavMenu">
+
+                            <div class="sidenav-link border-0 rounded-xl-5">
+                                <div class="close d-flex d-xl-none">
+                                    <button type="button" class="btn-close" data-bs-toggle="collapse"
+                                        data-bs-target="#sidenavMenu" aria-controls="sidenavMenu" aria-expanded="false"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="section">
+                                    <div class="header">Configuración</div>
+                                    <div class="items">
+                                        <a href="#" class="item-link">
+                                            <div class="item">
+                                                <span class="material-symbols-outlined icon" translate='no'>mail</span>
+                                                <div class="text">Cuentas</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="section">
+                                    <div class="header">Transacciones</div>
+                                    <div class="items">
+                                        <a href="{% url 'home:entrada' %}" class="item-link">
+                                            <div class="item">
+                                                <span class="material-symbols-outlined icon" translate='no'>person</span>
+                                                <div class="text">Entradas</div>
+                                            </div>
+                                        <a href="{% url 'home:salida' %}" class="item-link">
+                                            <div class="item">
+                                                <span class="material-symbols-outlined icon" translate='no'>supervisor_account</span>
+                                                <div class="text">Salidas</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="section">
+                                    <div class="header">Acciones</div>
+                                    <div class="items">
+                                        <a href="{% url 'home:reglas' %}" class="item-link">
+                                            <div class="item">
+                                                <span class="material-symbols-outlined icon" translate='no'>pending_actions</span>
+                                                <div class="text">Reglas</div>
+                                            </div>
+                                        </a><a href="{% url 'home:reportes' %}" class="item-link">
+                                            <div class="item">
+                                                <span class="material-symbols-outlined icon" translate='no'>explore</span>
+                                                <div class="text">Reportes</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+
+
+            <!-- ============================================== -->
+            <!-- CONTENIDO -->
+            <!-- ============================================== -->
+
+            <section class="col-lg-9 col-xl-10">
+<div class="col d-flex flex-column gap-4 flex-grow-1">
+                <nav aria-label="breadcrumb" class="bg-neutral-100 rounded-5 p-3">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                    </ol>
+                </nav>
+                <div class="d-flex flex-column gap-4 flex-grow-1 bg-neutral-100 rounded-5">
+
+                </div>
+
+            </div>
+                {% if messages %}
+
+                    {% for message in messages %}
+
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+
+                            {{ message }}
+
+                            <button
+                                class="btn-close"
+                                data-bs-dismiss="alert">
+
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+
+            </section>
+
         </div>
-    {% endfor %}
-{% endif %}
 
-{% block content %}
-{% endblock %}
+    </main>
+        <!-- ================================================ -->
+    <!-- FOOTER -->
+    <!-- ================================================ -->
 
-</div>
+    {% include "includes/footer.html" %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ================================================ -->
+    <!-- JAVASCRIPT -->
+    <!-- ================================================ -->
 
-{% block extra_js %}{% endblock %}
+    <!-- JQuery -->
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Kit UNAL -->
+
+    <script src="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/js/kitUnal.bundle.min.js"></script>
+
+    <!-- ================================================ -->
+    <!-- MENÚ ACTIVO -->
+    <!-- ================================================ -->
+
+    <script>
+
+        $(function(){
+
+            let url = window.location.pathname;
+
+            $(".list-group-item-action").each(function(){
+
+                if($(this).attr("href")==url){
+
+                    $(this).addClass("active");
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+    <!-- ================================================ -->
+    <!-- MENSAJES -->
+    <!-- ================================================ -->
+
+    <script>
+
+        window.setTimeout(function(){
+
+            $(".alert").fadeTo(500,0).slideUp(500,function(){
+
+                $(this).remove();
+
+            });
+
+        },5000);
+
+    </script>
+
+    {% block extra_js %}
+    {% endblock %}
 
 </body>
+
 </html>

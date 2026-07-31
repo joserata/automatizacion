@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <title>
+
+        {% block title %}
+            SGDEA
+        {% endblock %}
+
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="icon"
+          href="https://gestionapp.medellin.unal.edu.co/cdn/assets/favicon.ico">
+
+    <link rel="stylesheet"
+          href="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/css/kitUnal.min.css">
+
+    <link rel="stylesheet"
+          href="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/css/themes/main.min.css">
+
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+
+<body class="body">
+
+    {% include "includes/header_login.html" %}
+
+    <main class="body bg-neutral-90 bg-opacity-70 rounded-end-top-unal">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+    {% include "includes/footer_login.html" %}
+
+    <script src="https://gestionapp.unal.edu.co/cdn/kitUnal/12112024/js/kitUnal.bundle.min.js"></script>
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+</html>

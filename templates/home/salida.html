@@ -3,90 +3,243 @@
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
+
     <h2>Correos salientes</h2>
 
     <form method="post" action="{% url 'home:sincronizar_correo' %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">
 
-        <button class="btn btn-primary" type="submit">
-            <i class="bi bi-arrow-repeat"></i> Sincronizar Gmail
+        <button class="btn btn-primary">
+            <i class="bi bi-arrow-repeat"></i>
+            Sincronizar Gmail
         </button>
+
     </form>
+
 </div>
+
 
 <div class="table-responsive">
-    <table id="tablaSalida" class="table table-striped table-bordered table-hover w-100">
-        <thead class="table-success">
-            <tr>
-                <th>Consecutivo</th>
-                <th>Fecha</th>
-                <th>Destino</th>
-                <th>Asunto</th>
-            </tr>
-        </thead>
 
-        <tbody>
-        {% for correo in comunicaciones %}
-            <tr>
-                <td>{{ correo.consecutivo|default:"—" }}</td>
-                <td>{{ correo.fecha|date:"d/m/Y H:i" }}</td>
-                <td>{{ correo.destinatarios|default:"—" }}</td>
-                <td>
-                    {{ correo.asunto|default:"(Sin asunto)" }}
+<table id="tablaSalida"
+       class="table table-striped table-bordered table-hover w-100">
 
-                    {% if correo.tiene_adjuntos %}
-                        <i class="bi bi-paperclip"></i>
-                    {% endif %}
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="4" class="text-center">
-                    Sin registros. Use "Sincronizar Gmail" para cargarlos.
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<thead class="table-success">
+
+<tr>
+
+    <th width="40">
+        <input type="checkbox" id="checkTodos">
+    </th>
+
+    <th>Consecutivo</th>
+
+    <th>Fecha</th>
+
+    <th>Destino</th>
+
+    <th>Asunto</th>
+
+    <th class="text-center">
+        Adjuntos
+    </th>
+
+    <th class="text-center">
+        Evidencia
+    </th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+{% for correo in comunicaciones %}
+
+<tr>
+
+    <td class="text-center">
+
+        <input
+            type="checkbox"
+            class="seleccionar"
+            value="{{ correo.id }}"
+        >
+
+    </td>
+
+
+    <td>
+
+        {% if correo.consecutivo %}
+
+            <span class="badge text-bg-success">
+
+                {{ correo.consecutivo }}
+
+            </span>
+
+        {% else %}
+
+            —
+
+        {% endif %}
+
+    </td>
+
+
+    <td>
+
+        {{ correo.fecha|date:"d/m/Y H:i" }}
+
+    </td>
+
+
+    <td>
+
+        {{ correo.destinatarios|default:"—" }}
+
+    </td>
+
+
+    <td>
+
+        {{ correo.asunto|default:"(Sin asunto)" }}
+
+    </td>
+
+
+    <td class="text-center">
+
+        {% if correo.tiene_adjuntos %}
+
+            <span
+                class="badge bg-warning text-dark">
+
+                <i class="bi bi-paperclip"></i>
+
+                {{ correo.adjuntos.count }}
+
+            </span>
+
+        {% else %}
+
+            —
+
+        {% endif %}
+
+    </td>
+
+
+    <td class="text-center">
+
+        {% if correo.evidencia %}
+
+            <a
+                href="{{ correo.evidencia.url }}"
+                target="_blank"
+                class="btn btn-outline-danger btn-sm">
+
+                <i class="bi bi-file-earmark-pdf"></i>
+
+            </a>
+
+        {% else %}
+
+            <span class="text-danger">
+
+                No generado
+
+            </span>
+
+        {% endif %}
+
+    </td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="7" class="text-center">
+
+Sin registros.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
 </div>
 
 {% endblock %}
 
+
+
 {% block extra_css %}
-<link rel="stylesheet"
-      href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
+
+<link
+rel="stylesheet"
+href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
+
 {% endblock %}
+
+
 
 {% block extra_js %}
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(document).ready(function () {
 
-    $('#tablaSalida').DataTable({
+$(function(){
 
-        responsive: true,
+    $("#tablaSalida").DataTable({
 
-        pageLength: 10,
+        responsive:true,
 
-        lengthMenu: [
-            [10, 25, 50, 100, -1],
-            [10, 25, 50, 100, "Todos"]
+        pageLength:10,
+
+        order:[[2,"desc"]],
+
+        lengthMenu:[
+            [10,25,50,100,-1],
+            [10,25,50,100,"Todos"]
         ],
 
-        order: [[1, 'desc']],
+        language:{
+            url:"https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json"
+        }
 
-        language: {
-    url: 'https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json'
-    }
+    });
+
+
+    $("#checkTodos").on("click",function(){
+
+        $(".seleccionar").prop(
+
+            "checked",
+
+            $(this).prop("checked")
+
+        );
 
     });
 
 });
+
 </script>
 
 {% endblock %}

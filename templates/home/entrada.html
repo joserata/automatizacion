@@ -86,11 +86,13 @@
 <tr>
 
     <td>
-        <input
-            type="checkbox"
-            class="form-check-input"
-            value="{{ correo.id }}">
-    </td>
+
+    <input
+        type="checkbox"
+        class="form-check-input checkCorreo"
+        value="{{ correo.id }}">
+
+</td>
 
     <td>
         {% if correo.radicado %}
@@ -166,15 +168,34 @@
 
     </td>
 
-    <td>
+    <td style="min-width:230px;">
 
-        {% if correo.responsable %}
-            {{ correo.responsable.nombre }}
-        {% else %}
-            —
-        {% endif %}
+<select
+    class="form-select form-select-sm responsable-select"
+    data-id="{{ correo.id }}">
 
-    </td>
+    <option value="">
+        -- Sin asignar --
+    </option>
+
+    {% for responsable in responsables %}
+
+        <option
+            value="{{ responsable.id }}"
+
+            {% if correo.responsable_id == responsable.id %}
+                selected
+            {% endif %}>
+
+            {{ responsable.nombre }}
+
+        </option>
+
+    {% endfor %}
+
+</select>
+
+</td>
 
 </tr>
 

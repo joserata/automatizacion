@@ -6,17 +6,51 @@ from applications.comunicaciones.forms import ReglaForm, ResponsableForm
 from applications.comunicaciones.models import Comunicacion, Regla, Responsable
 from applications.comunicaciones.services import GmailSyncError, sincronizar_gmail
 from .dashboard import Dashboard
+from applications.usuarios.decorators import grupo_requerido
 
-
-@login_required
+@grupo_requerido(
+    "Administrador",
+    "Transaccion",
+    "Consultor",
+)
 def dashboard(request):
-    return render(request, "home/dashboard.html", Dashboard.datos())
+    return render(
+        request,
+        "home/dashboard.html",
+        Dashboard.datos(),
+    )
 
 
 @login_required
 def entrada(request):
-    comunicaciones = Comunicacion.objects.filter(tipo="ENTRADA").select_related("responsable")
-    return render(request, "home/entrada.html", {"comunicaciones": comunicaciones})
+
+    comunicaciones = (
+        Comunicacion.objects
+        .filter(tipo="ENTRADA")
+        .select_related("responsable")
+    )
+
+    responsables = (
+        Responsable.objects
+        .filter(activo=True)
+        .order_by("nombre")
+    )
+
+    return render(
+
+        request,
+
+        "home/entrada.html",
+
+        {
+
+            "comunicaciones": comunicaciones,
+
+            "responsables": responsables,
+
+        }
+
+    )
 
 
 @login_required
