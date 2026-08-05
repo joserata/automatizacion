@@ -11,11 +11,19 @@ from applications.usuarios.decorators import grupo_requerido
 from django.views.decorators.http import require_POST
 
 from django.utils import timezone
+from applications.comunicaciones.forms_consecutivo import ConsecutivoForm
+from applications.comunicaciones.models import Consecutivo
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
+from datetime import datetime
 
 
 @grupo_requerido(
     "Administrador",
     "Transaccion",
+    "Operador",
     "Consultor",
 )
 def dashboard(request):
@@ -186,7 +194,7 @@ def editar_responsable(request, responsable_id=None):
 
 
 @require_POST
-@grupo_requerido("Admin")
+@grupo_requerido("Administrador")
 def remitir_transaccion(request):
 
     ids = request.POST.getlist("ids[]")
@@ -234,4 +242,55 @@ def entrada_tran(request):
             "comunicaciones": comunicaciones,
             "responsables": responsables,
         }
+    )
+
+def nuevo_consecutivo(request):
+
+    anio = datetime.now().year
+
+    ultimo = (
+        Consecutivo.objects
+        .filter(fecha__year=anio)
+        .order_by("-id")
+        .first()
+    )
+
+    if ultimo:
+
+        ultimo_consecutivo = ultimo.consecutivo
+
+        siguiente = (
+            f"N.1.014-{Consecutivo.objects.filter(fecha__year=anio).count()+1:04d}-{str(anio)[2:]}"
+        )
+
+    else:
+
+        ultimo_consecutivo = "No existe"
+
+        siguiente = f"N.1.014-0001-{str(anio)[2:]}"
+
+    if request.method == "POST":
+
+        form = ConsecutivoForm(request.POST)
+
+        if form.is_valid():
+
+            consecutivo = form.save(commit=False)
+            consecutivo.usuario = request.user
+            consecutivo.save()
+
+            return redirect("home:consecutivo_nuevo")
+
+    else:
+
+        form = ConsecutivoForm()
+
+    return render(
+        request,
+        "home/consecutivo_nuevo.html",
+        {
+            "form": form,
+            "ultimo_consecutivo": ultimo_consecutivo,
+            "siguiente_consecutivo": siguiente,
+        },
     )

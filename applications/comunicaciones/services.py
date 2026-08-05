@@ -138,39 +138,82 @@ def _normalizar(texto):
         if unicodedata.category(caracter) != "Mn"
     )
 
-
 def _radicar_si_aplica(comunicacion):
-    """Radica y delega un correo entrante segun la regla que coincida."""
+    """Radica y delega un correo entrante según la regla."""
+
     if comunicacion.tipo != "ENTRADA":
         return False
-    contenido = _normalizar(f"{comunicacion.asunto}\n{comunicacion.mensaje}")
+
+    contenido = _normalizar(
+        f"{comunicacion.asunto}\n{comunicacion.mensaje}"
+    )
+    print("\n======================")
+    print("ASUNTO:", comunicacion.asunto)
+    print("RADICADO:", comunicacion.radicado)
     regla = next(
-        (regla for regla in Regla.objects.filter(activa=True).select_related("responsable")
-         if _normalizar(regla.palabra) in contenido),
+        (
+            r
+            for r in Regla.objects.filter(activa=True).select_related("responsable")
+            if _normalizar(r.palabra) in contenido
+        ),
+        
         None,
     )
+    if regla:
+        print("REGLA ENCONTRADA:", regla.palabra)
+        print("RESPONSABLE:", regla.responsable.nombre)
+        print("ACTIVO:", regla.responsable.activo)
+    else:
+        print("NO SE ENCONTRO NINGUNA REGLA")
     if not regla or not regla.responsable.activo:
         return False
+
     if comunicacion.radicado:
-        if comunicacion.responsable_id != regla.responsable_id or comunicacion.estado != "DELEGADO":
+
+        if (
+            comunicacion.responsable_id != regla.responsable_id
+            or comunicacion.estado != "DELEGADO"
+        ):
+
             comunicacion.responsable = regla.responsable
             comunicacion.estado = "DELEGADO"
             comunicacion.etiqueta = regla.palabra
-            comunicacion.save(update_fields=["responsable", "estado", "etiqueta", "fecha_actualizacion"])
+
+            comunicacion.save(
+                update_fields=[
+                    "responsable",
+                    "estado",
+                    "etiqueta",
+                    "fecha_actualizacion",
+                ]
+            )
+
             Historial.objects.create(
                 comunicacion=comunicacion,
                 accion="Delegacion automatica actualizada",
-                descripcion=f"Regla: {regla.palabra}. Responsable: {regla.responsable.correo}.",
+                descripcion=f"Regla: {regla.palabra}",
             )
-            generar_pdf(comunicacion)
-        return False
-    with transaction.atomic():
-        consecutivo, _ = Consecutivo.objects.select_for_update().get_or_create(anio=comunicacion.fecha.year)
-        consecutivo.ultimo += 1
-        consecutivo.save(update_fields=["ultimo"])
-        numero = f"{consecutivo.anio}-{consecutivo.ultimo:06d}"
+        print("GENERANDO PDF ENTRADA")
+        generar_pdf(comunicacion)
 
-        comunicacion.radicado = numero
+        return False
+
+    with transaction.atomic():
+
+        anio = comunicacion.fecha.year
+
+        ultimo = (
+            Comunicacion.objects
+            .select_for_update()
+            .filter(
+                tipo="ENTRADA",
+                radicado__isnull=False,
+                fecha__year=anio
+            )
+            .count()
+        )
+
+        comunicacion.radicado = f"RAD-{anio}-{ultimo+1:06d}"
         comunicacion.responsable = regla.responsable
         comunicacion.estado = "DELEGADO"
         comunicacion.etiqueta = regla.palabra
@@ -184,20 +227,21 @@ def _radicar_si_aplica(comunicacion):
                 "fecha_actualizacion",
             ]
         )
-        
 
-        generar_pdf(comunicacion)   
+    Historial.objects.create(
+        comunicacion=comunicacion,
+        accion="Delegacion automatica",
+        descripcion=f"Regla: {regla.palabra}",
+    )
 
-        Historial.objects.create(
-            comunicacion=comunicacion,
-            accion="Delegacion automatica",
-            descripcion=f"Regla: {regla.palabra}. Responsable: {regla.responsable.correo}.",
-        )
-    # Generar evidencia PDF
-        generar_pdf(comunicacion)    
-        return True
+    generar_pdf(comunicacion)
+
+    return True
+
 def _generar_consecutivo_salida(comunicacion):
-    """Genera el consecutivo para un correo de salida."""
+    """
+    Genera el consecutivo para un correo de salida.
+    """
 
     if comunicacion.tipo != "SALIDA":
         return False
@@ -206,16 +250,30 @@ def _generar_consecutivo_salida(comunicacion):
         generar_pdf(comunicacion)
         return False
 
+    anio = comunicacion.fecha.year
+
     with transaction.atomic():
-        consecutivo, _ = Consecutivo.objects.select_for_update().get_or_create(
-            anio=comunicacion.fecha.year
+
+        ultimo = (
+            Comunicacion.objects
+            .select_for_update()
+            .filter(
+                tipo="SALIDA",
+                consecutivo__isnull=False,
+                fecha__year=anio,
+            )
+            .order_by("-consecutivo")
+            .first()
         )
 
-        consecutivo.ultimo += 1
-        consecutivo.save(update_fields=["ultimo"])
+        if ultimo:
+            ultimo_numero = int(
+                ultimo.consecutivo.split("-")[1]
+            )
+        else:
+            ultimo_numero = 0
 
-        anio = str(consecutivo.anio)[2:]
-        numero = f"N.1.014-{consecutivo.ultimo:04d}-{anio}"
+        numero = f"N.1.014-{ultimo_numero + 1:04d}-{str(anio)[2:]}"
 
         comunicacion.consecutivo = numero
 
@@ -225,18 +283,16 @@ def _generar_consecutivo_salida(comunicacion):
                 "fecha_actualizacion",
             ]
         )
-        
 
-        generar_pdf(comunicacion)
+    Historial.objects.create(
+        comunicacion=comunicacion,
+        accion="Consecutivo generado",
+        descripcion=f"Consecutivo asignado: {numero}",
+    )
 
-        Historial.objects.create(
-            comunicacion=comunicacion,
-            accion="Consecutivo generado",
-            descripcion=f"Consecutivo asignado: {numero}",
-        )
-        # Generar evidencia PDF
-        generar_pdf(comunicacion)
-        return True
+    generar_pdf(comunicacion)
+
+    return True
 
 def sincronizar_gmail():
     """

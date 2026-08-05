@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>Nuevo Consecutivo</h2>
+
+    <hr>
+<div class="row mb-4">
+
+    <div class="col-md-6">
+
+        <div class="card border-danger">
+
+            <div class="card-body">
+
+                <h6>Último consecutivo</h6>
+
+                <h3 class="text-danger">
+
+                    {{ ultimo_consecutivo }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card border-success">
+
+            <div class="card-body">
+
+                <h6>Próximo consecutivo</h6>
+
+                <h3 class="text-success">
+
+                    {{ siguiente_consecutivo }}
+
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="btn btn-primary">
+
+            Guardar
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

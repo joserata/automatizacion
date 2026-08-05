@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from datetime import datetime
 
 class Responsable(models.Model):
     nombre = models.CharField(max_length=200)
@@ -192,7 +192,7 @@ class Comunicacion(models.Model):
     verbose_name="PDF Evidencia"
 )
     class Meta:
-        verbose_name = "ComunicaciÃ³n"
+        verbose_name = "Comunicación"
         verbose_name_plural = "Comunicaciones"
         ordering = ["-fecha"]
 
@@ -263,29 +263,110 @@ class Historial(models.Model):
     def __str__(self):
         return self.accion
 
-
 class Consecutivo(models.Model):
 
-    anio = models.PositiveIntegerField(unique=True)
+    ARCHIVADO = (
+        ("SI", "SI"),
+        ("NO", "NO"),
+    )
 
-    ultimo = models.PositiveIntegerField(default=0)
+    consecutivo = models.CharField(
+        max_length=20,
+        unique=True,
+        editable=False,
+        verbose_name="Consecutivo"
+    )
+
+    fecha = models.DateField(
+        verbose_name="Fecha"
+    )
+
+    dirigido_a = models.CharField(
+        max_length=300,
+        verbose_name="Dirigido a"
+    )
+
+    asunto = models.CharField(
+        max_length=500
+    )
+
+    funcionario_responsable = models.CharField(
+        max_length=200
+    )
+
+    caso_aranda = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    observaciones = models.TextField(
+        blank=True
+    )
+
+    fecha_envio = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    tipo_archivo = models.CharField(
+        max_length=150,
+        verbose_name="Tipo Archivo / TRD"
+    )
+
+    ubicacion = models.CharField(
+        max_length=300,
+        verbose_name="Ubicación (Carpeta Archivo)"
+    )
+
+    archivado = models.CharField(
+        max_length=2,
+        choices=ARCHIVADO,
+        default="NO"
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True
+    )
 
     class Meta:
+
         verbose_name = "Consecutivo"
         verbose_name_plural = "Consecutivos"
-        ordering = ["-anio"]
+
+        ordering = [
+            "-fecha",
+            "-id"
+        ]
 
     def __str__(self):
-        return str(self.anio)
 
-ESTADOS_FLUJO = [
-    ("ADMIN", "Administración"),
-    ("TRANSACCION", "Transacción"),
-    ("FUNCIONARIO", "Funcionario"),
-]
+        return self.consecutivo
 
-estado_flujo = models.CharField(
-    max_length=20,
-    choices=ESTADOS_FLUJO,
-    default="ADMIN",
-)    
+    
+
+    def save(self, *args, **kwargs):
+
+        if not self.consecutivo:
+
+            anio = datetime.now().year
+
+            consecutivos = Consecutivo.objects.filter(
+                fecha__year=anio
+            ).count() + 1
+
+            self.consecutivo = (
+                f"N.1.014-{consecutivos:04d}-{str(anio)[2:]}"
+            )
+
+        super().save(*args, **kwargs)

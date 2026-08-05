@@ -26,4 +26,9 @@ urlpatterns = [
     views.entrada_tran,
     name="entrada_tran",
     ),
+    path(
+    "consecutivos/nuevo/",
+    views.nuevo_consecutivo,
+    name="consecutivo_nuevo",
+),
 ]
