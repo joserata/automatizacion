@@ -9,18 +9,17 @@ Dashboard
 </h2>
 <form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
-<div class="row">
+<div class="row g-3">
 
 <div class="col-md-3">
 
-<div class="card border-primary shadow">
+<div class="card border-primary shadow h-100">
 
 <div class="card-body">
 
 <h5>Entrantes</h5>
 
 <h2>{{ entrantes }}</h2>
-<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -30,14 +29,13 @@ Dashboard
 
 <div class="col-md-3">
 
-<div class="card border-success shadow">
+<div class="card border-success shadow h-100">
 
 <div class="card-body">
 
 <h5>Salientes</h5>
 
 <h2>{{ salientes }}</h2>
-<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -47,14 +45,13 @@ Dashboard
 
 <div class="col-md-3">
 
-<div class="card border-warning shadow">
+<div class="card border-warning shadow h-100">
 
 <div class="card-body">
 
 <h5>Radicados</h5>
 
 <h2>{{ radicados }}</h2>
-<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
 
 </div>
 
@@ -64,14 +61,61 @@ Dashboard
 
 <div class="col-md-3">
 
-<div class="card border-danger shadow">
+<div class="card border-danger shadow h-100">
 
 <div class="card-body">
 
 <h5>Pendientes</h5>
 
 <h2>{{ pendientes }}</h2>
-<form method="post" action="{% url 'home:sincronizar_correo' %}" class="mb-4">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> Sincronizar Gmail</button></form>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card border-info shadow h-100">
+
+<div class="card-body">
+
+<h5>Delegados</h5>
+
+<h2>{{ delegados }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card border-secondary shadow h-100">
+
+<div class="card-body">
+
+<h5>En proceso</h5>
+
+<h2>{{ en_proceso }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card border-dark shadow h-100">
+
+<div class="card-body">
+
+<h5>Finalizados</h5>
+
+<h2>{{ finalizados }}</h2>
 
 </div>
 

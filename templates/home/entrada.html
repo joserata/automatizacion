@@ -9,14 +9,14 @@
     <div>
 
         <button
-            id="btnAsignar"
-            class="btn btn-success me-2"
-            disabled>
+    id="btnRemitir"
+    class="btn btn-warning me-2"
+    disabled>
 
-            <i class="bi bi-person-check"></i>
-            Asignar seleccionados
+    <i class="bi bi-send"></i>
+    Remitir a Transacción
 
-        </button>
+</button>
 
         <form method="post"
               action="{% url 'home:sincronizar_correo' %}"
@@ -162,11 +162,22 @@
 
     <td>
 
-        <span class="badge text-bg-secondary">
-            {{ correo.get_estado_display }}
-        </span>
+{% if correo.remitido_transaccion %}
 
-    </td>
+    <span class="badge bg-warning text-dark">
+        <i class="bi bi-send"></i>
+        Remitido a Transacción
+    </span>
+
+{% else %}
+
+    <span class="badge bg-secondary">
+        {{ correo.get_estado_display }}
+    </span>
+
+{% endif %}
+
+</td>
 
     <td style="min-width:230px;">
 
@@ -298,15 +309,50 @@ $(document).on("change",".checkCorreo",function(){
 
 function actualizarBoton(){
 
-    let cantidad=$(".checkCorreo:checked").length;
+    let cantidad = $(".checkCorreo:checked").length;
 
-    $("#btnAsignar").prop(
+    $("#btnRemitir").prop(
         "disabled",
-        cantidad===0
+        cantidad === 0
     );
 
 }
 
+
+$("#btnRemitir").click(function () {
+
+    let ids = [];
+
+    $(".checkCorreo:checked").each(function () {
+        ids.push($(this).val());
+    });
+
+    if (ids.length === 0)
+        return;
+
+    $.ajax({
+
+        url: "{% url 'home:remitir_transaccion' %}",
+
+        method: "POST",
+
+        data: {
+
+            ids: ids,
+
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+
+        },
+
+        success: function () {
+
+            location.reload();
+
+        }
+
+    });
+
+});
 </script>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% load static %}
+
 <!doctype html>
 
 <html lang="es" data-bs-theme="light">
@@ -95,8 +96,14 @@
                         <div class="user-section-avatar-info">
                             <div class="avatar avatar-mn" data-bs-toggle="dropdown" aria-expanded="false"></div>
                             <div>
-                                <p class="fw-bold">Mercedes</p>
-                                <p>mmonsalvea</p>
+                                <p class="fw-bold">{{ request.user.username }}</p>
+                                <p>
+    {% for grupo in request.user.groups.all %}
+        {{ grupo.name }}
+    {% empty %}
+        Sin perfil
+    {% endfor %}
+</p>
                             </div>
                         </div>
 
@@ -198,49 +205,75 @@
                                         data-bs-target="#sidenavMenu" aria-controls="sidenavMenu" aria-expanded="false"
                                         aria-label="Close"></button>
                                 </div>
-                                <div class="section">
-                                    <div class="header">Configuración</div>
-                                    <div class="items">
-                                        <a href="#" class="item-link">
-                                            <div class="item">
-                                                <span class="material-symbols-outlined icon" translate='no'>mail</span>
-                                                <div class="text">Cuentas</div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="section">
-                                    <div class="header">Transacciones</div>
-                                    <div class="items">
-                                        <a href="{% url 'home:entrada' %}" class="item-link">
-                                            <div class="item">
-                                                <span class="material-symbols-outlined icon" translate='no'>person</span>
-                                                <div class="text">Entradas</div>
-                                            </div>
-                                        <a href="{% url 'home:salida' %}" class="item-link">
-                                            <div class="item">
-                                                <span class="material-symbols-outlined icon" translate='no'>supervisor_account</span>
-                                                <div class="text">Salidas</div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="section">
-                                    <div class="header">Acciones</div>
-                                    <div class="items">
-                                        <a href="{% url 'home:reglas' %}" class="item-link">
-                                            <div class="item">
-                                                <span class="material-symbols-outlined icon" translate='no'>pending_actions</span>
-                                                <div class="text">Reglas</div>
-                                            </div>
-                                        </a><a href="{% url 'home:reportes' %}" class="item-link">
-                                            <div class="item">
-                                                <span class="material-symbols-outlined icon" translate='no'>explore</span>
-                                                <div class="text">Reportes</div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
+                                <!-- CONFIGURACIÓN -->
+{% if request.user.is_superuser %}
+<div class="section">
+    <div class="header">Configuración</div>
+
+    <div class="items">
+        <a href="#" class="item-link">
+            <div class="item">
+                <span class="material-symbols-outlined icon" translate="no">mail</span>
+                <div class="text">Cuentas</div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- TRANSACCIONES -->
+<div class="section">
+    <div class="header">Transacciones</div>
+
+    <div class="items">
+
+        {% if request.user.is_superuser %}
+            <a href="{% url 'home:entrada' %}" class="item-link">
+        {% else %}
+            <a href="{% url 'home:entrada_tran' %}" class="item-link">
+        {% endif %}
+                <div class="item">
+                    <span class="material-symbols-outlined icon" translate="no">mail</span>
+                    <div class="text">Entradas</div>
+                </div>
+            </a>
+
+        <a href="{% url 'home:salida' %}" class="item-link">
+            <div class="item">
+                <span class="material-symbols-outlined icon" translate="no">outbox</span>
+                <div class="text">Salidas</div>
+            </div>
+        </a>
+
+    </div>
+</div>
+
+
+<!-- ACCIONES -->
+<div class="section">
+    <div class="header">Acciones</div>
+
+    <div class="items">
+
+        {% if request.user.is_superuser %}
+        <a href="{% url 'home:reglas' %}" class="item-link">
+            <div class="item">
+                <span class="material-symbols-outlined icon" translate="no">pending_actions</span>
+                <div class="text">Reglas</div>
+            </div>
+        </a>
+        {% endif %}
+
+        <a href="{% url 'home:reportes' %}" class="item-link">
+            <div class="item">
+                <span class="material-symbols-outlined icon" translate="no">explore</span>
+                <div class="text">Reportes</div>
+            </div>
+        </a>
+
+    </div>
+</div>
                             </div>
                         </div>
                     </div>

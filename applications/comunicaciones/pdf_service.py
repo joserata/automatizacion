@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from django.conf import settings
-
+from bs4 import BeautifulSoup
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import (
@@ -66,6 +66,10 @@ def generar_pdf(comunicacion: Comunicacion):
 
     contenido = []
 
+    # =====================================================
+    # ENCABEZADO
+    # =====================================================
+
     contenido.append(Paragraph("SGDEA", titulo))
     contenido.append(Spacer(1, 15))
 
@@ -123,27 +127,62 @@ def generar_pdf(comunicacion: Comunicacion):
 
     contenido.append(Spacer(1, 10))
 
-    texto = (
-        comunicacion.mensaje
-        .replace("\n", "<br/>")
-    )
+    # =====================================================
+    # LIMPIEZA DEL HTML DEL CORREO
+    # =====================================================
 
-    contenido.append(
-        Paragraph(texto, normal)
-    )
+    texto = comunicacion.mensaje or ""
+
+    # Convierte siempre a texto plano
+    soup = BeautifulSoup(texto, "html.parser")
+
+    texto = soup.get_text(separator="\n")
+
+    texto = texto.replace("\xa0", " ")
+
+    texto = texto.replace("\r", "")
+
+    # Elimina líneas vacías
+    lineas = [
+        linea.strip()
+        for linea in texto.split("\n")
+        if linea.strip()
+    ]
+
+    # ReportLab maneja mejor varios Paragraph
+    for linea in lineas:
+
+        contenido.append(
+            Paragraph(linea, normal)
+        )
+
+    # =====================================================
+    # GENERAR PDF
+    # =====================================================
 
     doc.build(contenido)
 
+    # =====================================================
+    # GUARDAR RUTA EN LA BASE DE DATOS
+    # =====================================================
+
     ruta_relativa = str(
-    archivo.relative_to(BASE_DIR)
+        archivo.relative_to(BASE_DIR)
     ).replace("\\", "/")
 
-# Obtener nuevamente el objeto desde la BD
-    com = Comunicacion.objects.get(pk=comunicacion.pk)
+    comunicacion.evidencia = ruta_relativa
 
-    com.evidencia = ruta_relativa
-    com.save()
+    comunicacion.save(
+        update_fields=[
+            "evidencia",
+            "fecha_actualizacion",
+        ]
+    )
 
-    print("GUARDADO:", com.id, com.evidencia)
+    print(
+        "PDF generado:",
+        comunicacion.id,
+        comunicacion.evidencia,
+    )
 
     return archivo

@@ -10,25 +10,7 @@ class UsuarioLogin(LoginView):
     authentication_form = LoginForm
     redirect_authenticated_user = True
 
-    def get_success_url(self):
-
-        usuario = self.request.user
-
-        if usuario.groups.filter(name="Administrador").exists():
-            return reverse_lazy("home:dashboard")
-
-        elif usuario.groups.filter(name="Transaccion").exists():
-            return reverse_lazy("home:entrada")
-
-        elif usuario.groups.filter(name="Operador").exists():
-            return reverse_lazy("home:salida")
-
-        elif usuario.groups.filter(name="Consultor").exists():
-            return reverse_lazy("home:dashboard")
-
-        return reverse_lazy("home:dashboard")
-
 
 class UsuarioLogout(LogoutView):
 
-    next_page = "login"
+    next_page = reverse_lazy("login")

@@ -115,6 +115,35 @@ class Comunicacion(models.Model):
         db_index=True
     )
 
+    remitido_transaccion = models.BooleanField(
+    default=False
+)
+
+    fecha_remision = models.DateTimeField(
+    null=True,
+    blank=True
+)
+
+    prioridad = models.CharField(
+    max_length=20,
+    choices=PRIORIDAD,
+    default="NORMAL"
+)
+
+    ESTADO_FLUJO = (
+        ("ADMIN", "Administrador"),
+        ("TRANSACCION", "Transacción"),
+        ("FUNCIONARIO", "Funcionario"),
+        ("FINALIZADO", "Finalizado"),
+    )
+
+    estado_flujo = models.CharField(
+        max_length=20,
+        choices=ESTADO_FLUJO,
+        default="ADMIN",
+        db_index=True,
+    )
+
     prioridad = models.CharField(
         max_length=20,
         choices=PRIORIDAD,
@@ -169,6 +198,14 @@ class Comunicacion(models.Model):
 
     def __str__(self):
         return f"{self.asunto}"
+
+    def estado_logico_display(self):
+        historial = self.historial_set.order_by("-fecha").first()
+        if historial and historial.accion == "Remitido a Transaccion":
+            return "Remitido a Transacción"
+        if self.responsable_id and self.estado == "DELEGADO":
+            return "Delegado a responsable"
+        return self.get_estado_display()
 
 
 class Adjunto(models.Model):
@@ -240,3 +277,15 @@ class Consecutivo(models.Model):
 
     def __str__(self):
         return str(self.anio)
+
+ESTADOS_FLUJO = [
+    ("ADMIN", "Administración"),
+    ("TRANSACCION", "Transacción"),
+    ("FUNCIONARIO", "Funcionario"),
+]
+
+estado_flujo = models.CharField(
+    max_length=20,
+    choices=ESTADOS_FLUJO,
+    default="ADMIN",
+)    

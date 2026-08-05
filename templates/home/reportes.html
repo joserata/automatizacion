@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="card shadow">
+<div class="container">
 
 <div class="card-header bg-info text-white">
 
@@ -12,9 +12,44 @@ Reportes
 
 <div class="card-body">
 
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h6>Entrantes</h6>
+                <h3>{{ entrantes|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body">
+                <h6>Salientes</h6>
+                <h3>{{ salientes|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body">
+                <h6>Delegados</h6>
+                <h3>{{ delegados|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h6>Pendientes</h6>
+                <h3>{{ pendientes|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
 <p>
 
-Aquí se generarán los reportes en Excel.
+Aquí se generarán los reportes en Excel y estadísticas del flujo operativo.
 
 </p>
 

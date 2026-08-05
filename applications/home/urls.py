@@ -14,4 +14,16 @@ urlpatterns = [
     path("responsables/nuevo/", views.editar_responsable, name="nuevo_responsable"),
     path("responsables/<int:responsable_id>/", views.editar_responsable, name="editar_responsable"),
     path("sincronizar-correo/", views.sincronizar_correo, name="sincronizar_correo"),
+    path("remitir-a-transaccion/", views.remitir_a_transaccion, name="remitir_a_transaccion"),
+    path("asignar-responsables/", views.asignar_responsables, name="asignar_responsables"),
+    path(
+    "remitir-transaccion/",
+    views.remitir_transaccion,
+    name="remitir_transaccion",
+    ),
+    path(
+    "entrada-transaccion/",
+    views.entrada_tran,
+    name="entrada_tran",
+    ),
 ]
