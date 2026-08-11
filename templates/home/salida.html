@@ -135,27 +135,26 @@
 
     <td class="text-center">
 
-        {% if correo.evidencia %}
+        {% if correo.drive_url %}
 
-            <a
-                href="{{ correo.evidencia.url }}"
-                target="_blank"
-                class="btn btn-outline-danger btn-sm">
+    <a
+        href="{{ correo.drive_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-outline-danger btn-sm"
+        title="Abrir PDF en Google Drive">
 
-                <i class="bi bi-file-earmark-pdf"></i>
+        <i class="bi bi-file-earmark-pdf"></i>
 
-            </a>
+    </a>
 
-        {% else %}
+{% else %}
 
-            <span class="text-danger">
+    <span class="text-danger">
+        No generado
+    </span>
 
-                No generado
-
-            </span>
-
-        {% endif %}
-
+{% endif %}
     </td>
 
 </tr>

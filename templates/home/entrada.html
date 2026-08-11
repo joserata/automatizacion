@@ -8,7 +8,8 @@
 
     <div>
 
-        <button
+       {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+<button
     id="btnRemitir"
     class="btn btn-warning me-2"
     disabled>
@@ -17,6 +18,7 @@
     Remitir a Transacción
 
 </button>
+{% endif %}
 
         <form method="post"
               action="{% url 'home:sincronizar_correo' %}"
@@ -140,23 +142,25 @@
 
     <td class="text-center">
 
-        {% if correo.evidencia %}
+       {% if correo.drive_url %}
 
-            <a href="{{ correo.evidencia.url }}"
-               target="_blank"
-               class="btn btn-sm btn-danger">
+    <a href="{{ correo.drive_url }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="btn btn-sm btn-danger"
+       title="Abrir PDF en Google Drive">
 
-                <i class="bi bi-file-earmark-pdf"></i>
+        <i class="bi bi-file-earmark-pdf"></i>
 
-            </a>
+    </a>
 
-        {% else %}
+{% else %}
 
-            <span class="text-muted">
-                No generado
-            </span>
+    <span class="text-muted">
+        No generado
+    </span>
 
-        {% endif %}
+{% endif %}
 
     </td>
 

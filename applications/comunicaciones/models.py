@@ -3,11 +3,33 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 class Responsable(models.Model):
-    nombre = models.CharField(max_length=200)
+
+    nombre = models.CharField(
+        max_length=200
+    )
+
     correo = models.EmailField()
-    cargo = models.CharField(max_length=150, blank=True)
-    dependencia = models.CharField(max_length=150)
-    activo = models.BooleanField(default=True)
+
+    cargo = models.CharField(
+        max_length=150,
+        blank=True
+    )
+
+    dependencia = models.CharField(
+        max_length=150
+    )
+
+    activo = models.BooleanField(
+        default=True
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="responsables"
+    )
 
     class Meta:
         verbose_name = "Responsable"
@@ -16,8 +38,8 @@ class Responsable(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.dependencia}"
-
-
+    
+    
 class Regla(models.Model):
     palabra = models.CharField(max_length=100, unique=True)
     responsable = models.ForeignKey(
@@ -190,6 +212,26 @@ class Comunicacion(models.Model):
     blank=True,
     null=True,
     verbose_name="PDF Evidencia"
+)
+    drive_file_id = models.CharField(
+    max_length=200,
+    blank=True,
+    null=True,
+    db_index=True,
+    verbose_name="ID archivo Google Drive"
+)
+
+    drive_url = models.URLField(
+    max_length=200,
+    blank=True,
+    null=True,
+    verbose_name="URL Google Drive"
+)
+
+    drive_fecha_subida = models.DateTimeField(
+    blank=True,
+    null=True,
+    verbose_name="Fecha subida a Drive"
 )
     class Meta:
         verbose_name = "Comunicación"
