@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ================================================== -->
+
+    <div class="container-fluid">
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+                Consecutivos - Administrador
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <!-- ================================================== -->
+            <!-- TARJETAS -->
+            <!-- ================================================== -->
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-3">
+
+                    <div class="card border-primary shadow-sm">
+
+                        <div class="card-body">
+
+                            <h6 class="text-muted">
+                                Total
+                            </h6>
+
+                            <h3>
+                                {{ consecutivos|length }}
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="card border-success shadow-sm">
+
+                        <div class="card-body">
+
+                            <h6 class="text-muted">
+                                Último consecutivo
+                            </h6>
+
+                            <h5>
+
+                                {% if consecutivos %}
+                                    {{ consecutivos.0.consecutivo }}
+                                {% else %}
+                                    No existen
+                                {% endif %}
+
+                            </h5>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="card border-info shadow-sm">
+
+                        <div class="card-body">
+
+                            <h6 class="text-muted">
+                                Usuarios
+                            </h6>
+
+                            <h3>
+
+                                {% regroup consecutivos by usuario as usuarios %}
+
+                                {{ usuarios|length }}
+
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="card border-warning shadow-sm">
+
+                        <div class="card-body">
+
+                            <h6 class="text-muted">
+                                Estado
+                            </h6>
+
+                            <h5 class="text-success">
+                                Control global activo
+                            </h5>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================== -->
+            <!-- TABLA -->
+            <!-- ================================================== -->
+
+            <div class="table-responsive">
+
+                <table
+                    id="tablaConsecutivosAdmin"
+                    class="table table-striped table-hover table-bordered align-middle"
+                    style="width:100%;"
+                >
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>Consecutivo</th>
+
+                            <th>Usuario</th>
+
+                            <th>Fecha</th>
+
+                            <th>Dirigido a</th>
+
+                            <th>Asunto</th>
+
+                            <th>Funcionario responsable</th>
+
+                            <th>Caso Aranda</th>
+
+                            <th>Fecha envío</th>
+
+                            <th>Tipo archivo / TRD</th>
+
+                            <th>Ubicación</th>
+
+                            <th>Archivado</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for consecutivo in consecutivos %}
+
+                        <tr>
+
+                            <td>
+
+                                <strong>
+                                    {{ consecutivo.consecutivo }}
+                                </strong>
+
+                            </td>
+
+                            <td>
+
+                                {% if consecutivo.usuario %}
+
+                                    <span class="badge bg-primary">
+
+                                        {{ consecutivo.usuario.username }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+
+                                        Sin usuario
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ consecutivo.fecha|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+                                {{ consecutivo.dirigido_a }}
+                            </td>
+
+                            <td>
+                                {{ consecutivo.asunto }}
+                            </td>
+
+                            <td>
+                                {{ consecutivo.funcionario_responsable }}
+                            </td>
+
+                            <td>
+                                {{ consecutivo.caso_aranda|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if consecutivo.fecha_envio %}
+
+                                    {{ consecutivo.fecha_envio|date:"d/m/Y" }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ consecutivo.tipo_archivo }}
+                            </td>
+
+                            <td>
+                                {{ consecutivo.ubicacion }}
+                            </td>
+
+                            <td>
+
+                                {% if consecutivo.archivado == "SI" %}
+
+                                    <span class="badge bg-success">
+                                        SI
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        NO
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="11"
+                                class="text-center text-muted py-4"
+                            >
+
+                                No existen consecutivos registrados.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ====================================================== -->
+<!-- DATATABLES -->
+<!-- ====================================================== -->
+
+<link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css"
+>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    new DataTable("#tablaConsecutivosAdmin", {
+
+        pageLength: 10,
+
+        lengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, "Todos"]
+        ],
+
+        order: [
+            [0, "desc"]
+        ],
+
+        language: {
+
+            search: "Buscar:",
+
+            lengthMenu:
+                "Mostrar _MENU_ registros",
+
+            info:
+                "Mostrando _START_ a _END_ de _TOTAL_ registros",
+
+            infoEmpty:
+                "No hay registros",
+
+            zeroRecords:
+                "No se encontraron resultados",
+
+            emptyTable:
+                "No existen consecutivos registrados",
+
+            paginate: {
+
+                first: "Primero",
+
+                last: "Último",
+
+                next: "Siguiente",
+
+                previous: "Anterior"
+
+            }
+
+        }
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

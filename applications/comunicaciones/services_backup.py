@@ -18,7 +18,6 @@ import re
 import unicodedata
 
 from email.header import decode_header
-from email.message import EmailMessage
 from email.utils import parsedate_to_datetime
 
 from django.conf import settings
@@ -161,108 +160,83 @@ def _servicio_gmail():
         cache_discovery=False
     )
 
-
 # ==========================================================
-# ENVIAR DELEGACIÓN POR GMAIL
+# ENVIAR CORREO
 # ==========================================================
 
-def _enviar_delegacion_gmail(servicio, comunicacion, responsable):
+def enviar_correo(
+    destinatario,
+    asunto,
+    cuerpo,
+):
     """
-    Envía al responsable el correo delegado.
-
-    Se evita duplicar el envío consultando Historial.
+    Envía un correo utilizando la cuenta Gmail
+    autenticada del sistema.
     """
 
-    if not responsable or not responsable.correo:
-        print("NO SE PUEDE ENVIAR DELEGACION: responsable sin correo.")
-        return False
-
-    if Historial.objects.filter(
-        comunicacion=comunicacion,
-        accion="Correo de delegacion enviado",
-    ).exists():
-        print(
-            "CORREO DE DELEGACION YA ENVIADO:",
-            responsable.correo,
+    if not destinatario:
+        raise GmailSyncError(
+            "El destinatario del correo está vacío."
         )
-        return False
 
-    asunto = (
-        f"[{comunicacion.radicado}] "
-        f"{comunicacion.asunto or 'Comunicación delegada'}"
-    )[:500]
+    try:
+        from email.mime.text import MIMEText
+        from googleapiclient.errors import HttpError
+    except ImportError as error:
+        raise GmailSyncError(
+            "No están disponibles las dependencias "
+            "necesarias para enviar correo."
+        ) from error
 
-    cuerpo = f"""
-Se le ha delegado una comunicación para su atención.
+    servicio = _servicio_gmail()
 
-RADICADO: {comunicacion.radicado or 'Pendiente'}
-FECHA: {timezone.localtime(comunicacion.fecha).strftime('%Y-%m-%d %H:%M')}
-REMITENTE: {comunicacion.remitente}
-ASUNTO: {comunicacion.asunto}
-REGLA / ETIQUETA: {comunicacion.etiqueta or 'N/A'}
+    mensaje = MIMEText(
+        cuerpo,
+        "plain",
+        "utf-8",
+    )
 
-------------------------------------------------------------
-MENSAJE ORIGINAL
-------------------------------------------------------------
-
-{comunicacion.mensaje or '(Sin contenido)'}
-
-------------------------------------------------------------
-Este mensaje fue enviado automáticamente por el sistema de gestión.
-""".strip()
-
-    mensaje = EmailMessage()
-    mensaje["To"] = responsable.correo
-    mensaje["Subject"] = asunto
-    mensaje.set_content(cuerpo)
+    mensaje["to"] = destinatario
+    mensaje["subject"] = asunto
 
     raw = base64.urlsafe_b64encode(
         mensaje.as_bytes()
     ).decode("utf-8")
 
     try:
+
         resultado = (
             servicio
             .users()
             .messages()
             .send(
                 userId="me",
-                body={"raw": raw},
+                body={
+                    "raw": raw
+                },
             )
             .execute()
         )
 
-        Historial.objects.create(
-            comunicacion=comunicacion,
-            accion="Correo de delegacion enviado",
-            descripcion=(
-                f"Enviado a: {responsable.nombre} "
-                f"<{responsable.correo}> | "
-                f"Gmail ID: {resultado.get('id', 'N/A')}"
-            ),
+        print(
+            "CORREO ENVIADO:",
+            destinatario,
+            "| MESSAGE ID:",
+            resultado.get("id"),
         )
+
+        return resultado
+
+    except HttpError as error:
 
         print(
-            "DELEGACION ENVIADA POR GMAIL:",
-            responsable.correo,
-        )
-        return True
-
-    except Exception as error:
-        Historial.objects.create(
-            comunicacion=comunicacion,
-            accion="Error envio delegacion",
-            descripcion=(
-                f"Destinatario: {responsable.correo} | "
-                f"Error: {error}"
-            ),
-        )
-
-        print(
-            "ERROR ENVIANDO DELEGACION:",
+            "ERROR GMAIL AL ENVIAR:",
             error,
         )
-        return False
+
+        raise GmailSyncError(
+            f"No fue posible enviar el correo: {error}"
+        ) from error
 
 
 # ==========================================================
@@ -847,27 +821,6 @@ def _radicar_si_aplica(comunicacion):
         # PDF
         # --------------------------------------------------
 
-        # --------------------------------------------------
-        # ENVIAR DELEGACIÓN SI TODAVÍA NO SE HA ENVIADO
-        # --------------------------------------------------
-
-        try:
-            servicio = _servicio_gmail()
-            _enviar_delegacion_gmail(
-                servicio,
-                comunicacion,
-                responsable,
-            )
-        except Exception as error:
-            print(
-                "NO FUE POSIBLE ENVIAR DELEGACION:",
-                error,
-            )
-
-        # --------------------------------------------------
-        # PDF
-        # --------------------------------------------------
-
         print(
             "GENERANDO PDF ENTRADA"
         )
@@ -981,23 +934,6 @@ def _radicar_si_aplica(comunicacion):
             f"Responsable: {responsable.nombre}"
         ),
     )
-
-    # ------------------------------------------------------
-    # ENVIAR DELEGACIÓN POR GMAIL
-    # ------------------------------------------------------
-
-    try:
-        servicio = _servicio_gmail()
-        _enviar_delegacion_gmail(
-            servicio,
-            comunicacion,
-            responsable,
-        )
-    except Exception as error:
-        print(
-            "NO FUE POSIBLE ENVIAR DELEGACION:",
-            error,
-        )
 
     print(
         "RADICADO GENERADO:",
@@ -1354,3 +1290,88 @@ def sincronizar_gmail():
     print("==========================================")
 
     return creados, actualizados
+
+
+def _responsable_ya_notificado(comunicacion):
+    return Historial.objects.filter(
+        comunicacion=comunicacion,
+        accion="Correo de delegacion enviado",
+    ).exists()
+
+def _notificar_responsable(comunicacion, regla, responsable):
+
+    if not responsable:
+        return False
+
+    if not responsable.correo:
+        print(
+            "RESPONSABLE SIN CORREO:",
+            responsable.nombre,
+        )
+        return False
+
+    if _responsable_ya_notificado(comunicacion):
+        print(
+            "RESPONSABLE YA NOTIFICADO:",
+            responsable.correo,
+        )
+        return False
+
+    asunto = (
+        f"[SGDEA] Nueva comunicación delegada - "
+        f"{comunicacion.radicado}"
+    )
+
+    cuerpo = f"""
+Se ha delegado una nueva comunicación en el SGDEA.
+
+RADICADO:
+{comunicacion.radicado}
+
+REMITENTE:
+{comunicacion.remitente}
+
+ASUNTO:
+{comunicacion.asunto}
+
+REGLA APLICADA:
+{regla.palabra}
+
+RESPONSABLE:
+{responsable.nombre}
+
+CORREO DEL RESPONSABLE:
+{responsable.correo}
+
+--------------------------------------------------
+
+MENSAJE ORIGINAL:
+
+{comunicacion.mensaje}
+
+--------------------------------------------------
+
+Este mensaje fue generado automáticamente por el SGDEA.
+"""
+
+    enviar_correo(
+        destinatario=responsable.correo,
+        asunto=asunto,
+        cuerpo=cuerpo,
+    )
+
+    Historial.objects.create(
+        comunicacion=comunicacion,
+        accion="Correo de delegacion enviado",
+        descripcion=(
+            f"Correo enviado a: "
+            f"{responsable.correo}"
+        ),
+    )
+
+    print(
+        "NOTIFICACION ENVIADA A:",
+        responsable.correo,
+    )
+
+    return True

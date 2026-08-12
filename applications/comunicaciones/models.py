@@ -313,10 +313,10 @@ class Consecutivo(models.Model):
     )
 
     consecutivo = models.CharField(
-        max_length=20,
-        unique=True,
-        editable=False,
-        verbose_name="Consecutivo"
+    max_length=20,
+    unique=True,
+    editable=False,
+    verbose_name="Consecutivo"
     )
 
     fecha = models.DateField(
@@ -370,7 +370,8 @@ class Consecutivo(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        related_name="consecutivos"
     )
 
     fecha_creacion = models.DateTimeField(
@@ -391,24 +392,9 @@ class Consecutivo(models.Model):
             "-id"
         ]
 
+        
     def __str__(self):
 
         return self.consecutivo
-
     
-
-    def save(self, *args, **kwargs):
-
-        if not self.consecutivo:
-
-            anio = datetime.now().year
-
-            consecutivos = Consecutivo.objects.filter(
-                fecha__year=anio
-            ).count() + 1
-
-            self.consecutivo = (
-                f"N.1.014-{consecutivos:04d}-{str(anio)[2:]}"
-            )
-
-        super().save(*args, **kwargs)
+   

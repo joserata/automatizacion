@@ -6,7 +6,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
+from django.db import transaction
+from django.utils import timezone
 from applications.comunicaciones.forms import (
     ReglaForm,
     ResponsableForm,
@@ -30,6 +31,20 @@ from applications.usuarios.decorators import grupo_requerido
 from .dashboard import Dashboard
 
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
+from applications.comunicaciones.models import Consecutivo
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+
+from applications.comunicaciones.forms_consecutivo import ConsecutivoForm
+
 # ==========================================================
 # DASHBOARD
 # ==========================================================
@@ -47,7 +62,6 @@ def dashboard(request):
         Dashboard.datos(),
     )
 
-
 # ==========================================================
 # ENTRADAS
 # ==========================================================
@@ -58,15 +72,24 @@ def entrada(request):
     comunicaciones = (
         Comunicacion.objects
         .filter(tipo="ENTRADA")
-        .select_related("responsable")
+        .select_related("responsable", "usuario")
         .order_by("-fecha")
     )
 
     # ======================================================
-    # TRANSACCIÓN
+    # ADMINISTRADOR
     # ======================================================
+    # Ve absolutamente todas las entradas.
+    if request.user.is_superuser or request.user.groups.filter(
+        name="Administrador"
+    ).exists():
 
-    if request.user.groups.filter(name="Transaccion").exists():
+        pass
+
+    # ======================================================
+    # TRANSACCION
+    # ======================================================
+    elif request.user.groups.filter(name="Transaccion").exists():
 
         comunicaciones = comunicaciones.filter(
             remitido_transaccion=True
@@ -75,36 +98,39 @@ def entrada(request):
     # ======================================================
     # OPERADOR
     # ======================================================
-
     elif request.user.groups.filter(name="Operador").exists():
 
-        try:
-            responsable = request.user.responsable
-        except Responsable.DoesNotExist:
-            responsable = None
+        responsable = (
+            Responsable.objects
+            .filter(
+                usuario=request.user,
+                activo=True
+            )
+            .first()
+        )
 
         if responsable:
             comunicaciones = comunicaciones.filter(
-                responsable=responsable
+                responsable=responsable,
+                estado="DELEGADO"
             )
         else:
-            # Un operador sin Responsable asociado
-            # no debe visualizar comunicaciones.
             comunicaciones = comunicaciones.none()
 
     # ======================================================
     # CONSULTOR
     # ======================================================
-
     elif request.user.groups.filter(name="Consultor").exists():
 
-        # Por ahora puede consultar las entradas.
+        # El consultor puede consultar las entradas.
         pass
 
     # ======================================================
-    # ADMINISTRADOR
+    # CUALQUIER OTRO USUARIO
     # ======================================================
-    # El administrador puede ver todas las comunicaciones.
+    else:
+
+        comunicaciones = comunicaciones.none()
 
     responsables = (
         Responsable.objects
@@ -121,7 +147,6 @@ def entrada(request):
         },
     )
 
-
 # ==========================================================
 # SALIDAS
 # ==========================================================
@@ -132,8 +157,56 @@ def salida(request):
     comunicaciones = (
         Comunicacion.objects
         .filter(tipo="SALIDA")
+        .select_related("usuario")
         .order_by("-fecha")
     )
+
+    # ======================================================
+    # ADMINISTRADOR
+    # ======================================================
+
+    if request.user.is_superuser or request.user.groups.filter(
+        name="Administrador"
+    ).exists():
+
+        # Administrador puede ver todas.
+        pass
+
+    # ======================================================
+    # CUALQUIER OTRO USUARIO
+    # ======================================================
+
+    else:
+
+        # Cada usuario solamente ve sus propias salidas.
+        comunicaciones = comunicaciones.filter(
+            usuario=request.user
+        )
+
+    return render(
+        request,
+        "home/salida.html",
+        {
+            "comunicaciones": comunicaciones,
+        },
+    )
+
+    # ======================================================
+    # ADMINISTRADOR
+    # ======================================================
+    if request.user.groups.filter(name="Administrador").exists():
+
+        # El administrador puede ver todas.
+        pass
+
+    # ======================================================
+    # DEMÁS USUARIOS
+    # ======================================================
+    else:
+
+        comunicaciones = comunicaciones.filter(
+            usuario=request.user
+        )
 
     return render(
         request,
@@ -519,96 +592,212 @@ def entrada_tran(request):
 # NUEVO CONSECUTIVO
 # ==========================================================
 
+# ==========================================================
+# NUEVO CONSECUTIVO
+# ==========================================================
+
 @login_required
 def nuevo_consecutivo(request):
 
-    anio = datetime.now().year
+    anio = timezone.now().year
+
+    # ======================================================
+    # BUSCAR ÚLTIMO CONSECUTIVO DEL AÑO
+    # ======================================================
 
     ultimo = (
         Consecutivo.objects
-        .filter(
-            fecha__year=anio
-        )
+        .filter(fecha__year=anio)
         .order_by("-id")
         .first()
     )
 
-    if ultimo:
+    ultimo_numero = 0
 
-        ultimo_consecutivo = (
-            ultimo.consecutivo
-        )
+    if ultimo and ultimo.consecutivo:
 
-        cantidad = (
-            Consecutivo.objects
-            .filter(
-                fecha__year=anio
-            )
-            .count()
-        )
+        try:
+            partes = ultimo.consecutivo.split("-")
 
-        siguiente = (
-            f"N.1.014-"
-            f"{cantidad + 1:04d}-"
-            f"{str(anio)[2:]}"
-        )
+            # N.1.014-0003-26
+            ultimo_numero = int(partes[1])
 
-    else:
+        except (ValueError, IndexError):
+            ultimo_numero = 0
 
-        ultimo_consecutivo = (
-            "No existe"
-        )
+    # ======================================================
+    # SIGUIENTE CONSECUTIVO
+    # ======================================================
 
-        siguiente = (
-            f"N.1.014-0001-"
-            f"{str(anio)[2:]}"
-        )
+    siguiente_numero = ultimo_numero + 1
+
+    siguiente_consecutivo = (
+        f"N.1.014-"
+        f"{siguiente_numero:04d}-"
+        f"{str(anio)[2:]}"
+    )
+
+    # ======================================================
+    # POST
+    # ======================================================
 
     if request.method == "POST":
 
-        form = ConsecutivoForm(
-            request.POST
-        )
+        form = ConsecutivoForm(request.POST)
 
         if form.is_valid():
 
-            consecutivo = form.save(
-                commit=False
-            )
+            try:
 
-            consecutivo.usuario = (
-                request.user
-            )
+                with transaction.atomic():
 
-            consecutivo.save()
+                    # Volvemos a consultar dentro de la
+                    # transacción para evitar duplicados.
 
-            messages.success(
-                request,
-                (
-                    f"Consecutivo "
-                    f"{consecutivo.consecutivo} "
-                    "creado correctamente."
-                ),
-            )
+                    ultimo = (
+                        Consecutivo.objects
+                        .select_for_update()
+                        .filter(fecha__year=anio)
+                        .order_by("-id")
+                        .first()
+                    )
 
-            return redirect(
-                "home:consecutivo_nuevo"
-            )
+                    ultimo_numero = 0
+
+                    if ultimo and ultimo.consecutivo:
+
+                        try:
+
+                            partes = ultimo.consecutivo.split("-")
+
+                            ultimo_numero = int(partes[1])
+
+                        except (ValueError, IndexError):
+
+                            ultimo_numero = 0
+
+                    # ======================================
+                    # GENERAR CONSECUTIVO GLOBAL
+                    # ======================================
+
+                    siguiente_numero = ultimo_numero + 1
+
+                    numero = (
+                        f"N.1.014-"
+                        f"{siguiente_numero:04d}-"
+                        f"{str(anio)[2:]}"
+                    )
+
+                    # ======================================
+                    # GUARDAR
+                    # ======================================
+
+                    consecutivo = form.save(commit=False)
+
+                    consecutivo.consecutivo = numero
+                    consecutivo.usuario = request.user
+
+                    consecutivo.save()
+
+                messages.success(
+                    request,
+                    f"Consecutivo {numero} generado correctamente."
+                )
+
+                return redirect("home:salida")
+
+            except Exception as e:
+
+                messages.error(
+                    request,
+                    f"No fue posible generar el consecutivo: {e}"
+                )
 
     else:
 
         form = ConsecutivoForm()
 
+    # ======================================================
+    # MOSTRAR ÚLTIMO Y SIGUIENTE
+    # ======================================================
+
+    contexto = {
+        "form": form,
+        "titulo": "Nuevo consecutivo",
+        "ultimo_consecutivo": (
+            ultimo.consecutivo
+            if ultimo
+            else "No existen consecutivos"
+        ),
+        "siguiente_consecutivo": siguiente_consecutivo,
+    }
+
     return render(
         request,
         "home/consecutivo_nuevo.html",
+        contexto
+    )
+
+from django.core.exceptions import PermissionDenied    
+
+# ==========================================================
+# CONSULTA DE CONSECUTIVOS DEL USUARIO
+# ==========================================================
+
+@login_required
+def consulta_consecutivos(request):
+
+    consecutivos = (
+        Consecutivo.objects
+        .filter(usuario=request.user)
+        .select_related("usuario")
+        .order_by("-fecha_creacion", "-id")
+    )
+
+    return render(
+        request,
+        "home/consulta_consecutivos.html",
         {
-            "form": form,
-            "ultimo_consecutivo": (
-                ultimo_consecutivo
-            ),
-            "siguiente_consecutivo": (
-                siguiente
-            ),
+            "consecutivos": consecutivos,
+            "usuario_actual": request.user,
         },
     )
+
+
+# ==========================================================
+# CONSULTA DE CONSECUTIVOS - ADMINISTRADOR
+# ==========================================================
+
+@login_required
+def consecutivos_admin(request):
+
+    es_administrador = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    if not es_administrador:
+        raise PermissionDenied(
+            "No tiene permisos para consultar todos los consecutivos."
+        )
+
+    consecutivos = (
+        Consecutivo.objects
+        .select_related("usuario")
+        .order_by("-fecha_creacion", "-id")
+    )
+
+    return render(
+        request,
+        "home/consecutivos_admin.html",
+        {
+            "consecutivos": consecutivos,
+            "usuario_actual": request.user,
+        },
+    )
+    
+
+    
+    

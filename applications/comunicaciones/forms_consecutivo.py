@@ -80,5 +80,4 @@ class ConsecutivoForm(forms.ModelForm):
                     "rows": 4,
                 }
             ),
-
         }

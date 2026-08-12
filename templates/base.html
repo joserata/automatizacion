@@ -262,6 +262,41 @@
     </div>
 
 </a>
+<a href="{% url 'home:consulta_consecutivos' %}" class="item-link">
+
+    <div class="item">
+
+        <span class="material-symbols-outlined">
+            list_alt
+        </span>
+
+        <div class="text">
+            Mis Consecutivos
+        </div>
+
+    </div>
+
+</a>
+
+{% if request.user.is_superuser %}
+
+<a href="{% url 'home:consecutivos_admin' %}" class="item-link">
+
+    <div class="item">
+
+        <span class="material-symbols-outlined">
+            admin_panel_settings
+        </span>
+
+        <div class="text">
+            Consecutivos Administrador
+        </div>
+
+    </div>
+
+</a>
+
+{% endif %}
 
     </div>
 </div>
