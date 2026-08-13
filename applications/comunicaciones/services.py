@@ -177,13 +177,20 @@ def _enviar_delegacion_gmail(servicio, comunicacion, responsable):
         print("NO SE PUEDE ENVIAR DELEGACION: responsable sin correo.")
         return False
 
-    if Historial.objects.filter(
+    # ==========================================================
+    # VERIFICAR SI YA SE ENVIÓ A ESTE RESPONSABLE
+    # ==========================================================
+
+    correo_ya_enviado = Historial.objects.filter(
         comunicacion=comunicacion,
         accion="Correo de delegacion enviado",
-    ).exists():
+        descripcion__icontains=responsable.correo,
+    ).exists()
+
+    if correo_ya_enviado:
         print(
-            "CORREO DE DELEGACION YA ENVIADO:",
-            responsable.correo,
+        "CORREO DE DELEGACION YA ENVIADO:",
+        responsable.correo,
         )
         return False
 

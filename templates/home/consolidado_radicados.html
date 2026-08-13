@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Consolidado de Radicados
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ================================================== -->
+
+    <div class="container-fluid">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-inbox me-2"></i>
+                Consolidado de Radicados
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <!-- ================================================== -->
+            <!-- RESUMEN -->
+            <!-- ================================================== -->
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-3">
+                    <div class="card border-primary h-100">
+                        <div class="card-body">
+                            <small class="text-muted">
+                                Total radicados
+                            </small>
+
+                            <h3 class="mb-0">
+                                {{ total_radicados|default:0 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-success h-100">
+                        <div class="card-body">
+                            <small class="text-muted">
+                                Delegados
+                            </small>
+
+                            <h3 class="mb-0">
+                                {{ total_delegados|default:0 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-warning h-100">
+                        <div class="card-body">
+                            <small class="text-muted">
+                                Nuevos
+                            </small>
+
+                            <h3 class="mb-0">
+                                {{ total_nuevos|default:0 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-info h-100">
+                        <div class="card-body">
+                            <small class="text-muted">
+                                En proceso
+                            </small>
+
+                            <h3 class="mb-0">
+                                {{ total_en_proceso|default:0 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- ================================================== -->
+            <!-- TABLA -->
+            <!-- ================================================== -->
+
+            <div class="table-responsive">
+
+                <table
+                    id="tablaRadicados"
+                    class="table table-striped table-hover table-bordered align-middle nowrap"
+                    style="width:100%;"
+                >
+
+                    <thead class="table-dark">
+
+                        <tr>
+                            <th>Radicado</th>
+                            <th>Fecha</th>
+                            <th>Remitente</th>
+                            <th>Asunto</th>
+                            <th>Responsable</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Remitido a Transacción</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for radicado in radicados %}
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    {{ radicado.radicado|default:"-" }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ radicado.fecha|date:"d/m/Y H:i" }}
+                            </td>
+
+                            <td>
+                                {{ radicado.remitente|default:"-" }}
+                            </td>
+
+                            <td>
+                                {{ radicado.asunto|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if radicado.responsable %}
+
+                                    {{ radicado.responsable.nombre }}
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Sin asignar
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if radicado.estado == "DELEGADO" %}
+
+                                    <span class="badge bg-success">
+                                        Delegado
+                                    </span>
+
+                                {% elif radicado.estado == "NUEVO" %}
+
+                                    <span class="badge bg-primary">
+                                        Nuevo
+                                    </span>
+
+                                {% elif radicado.estado == "EN_PROCESO" %}
+
+                                    <span class="badge bg-warning text-dark">
+                                        En proceso
+                                    </span>
+
+                                {% elif radicado.estado == "FINALIZADO" %}
+
+                                    <span class="badge bg-dark">
+                                        Finalizado
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        {{ radicado.get_estado_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ radicado.get_prioridad_display }}
+                            </td>
+
+                            <td class="text-center">
+
+                                {% if radicado.remitido_transaccion %}
+
+                                    <span class="badge bg-info text-dark">
+                                        Sí
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        No
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="8" class="text-center py-4">
+
+                                <span class="text-muted">
+                                    No existen radicados para mostrar.
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+<!-- ====================================================== -->
+<!-- DATATABLES -->
+<!-- ====================================================== -->
+
+{% block extra_js %}
+
+<!-- DataTables CSS/JS -->
+<script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof $ === "undefined") {
+        console.error("jQuery no está disponible.");
+        return;
+    }
+
+    if (!$.fn.DataTable) {
+        console.error("DataTables no está disponible.");
+        return;
+    }
+
+    $('#tablaRadicados').DataTable({
+
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json"
+        },
+
+        pageLength: 25,
+
+        lengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, "Todos"]
+        ],
+
+        order: [
+            [1, "desc"]
+        ],
+
+        responsive: true,
+
+        autoWidth: false,
+
+        scrollX: true
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

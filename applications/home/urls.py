@@ -155,4 +155,38 @@ path(
     views.consecutivos_admin,
     name="consecutivos_admin",
 ),
+# ======================================================
+# RADICADOS
+# ======================================================
+
+path(
+    "consolidado-radicados/",
+    views.consolidado_radicados,
+    name="consolidado_radicados",
+),
+
+# ======================================================
+# EXPORTACIONES EXCEL
+# ======================================================
+
+path(
+    "reportes/exportar-radicados/",
+    views.exportar_radicados_excel,
+    name="exportar_radicados_excel",
+),
+
+path(
+    "reportes/exportar-consecutivos/",
+    views.exportar_consecutivos_excel,
+    name="exportar_consecutivos_excel",
+),
+# ======================================================
+# TABLERO DE CONTROL - CONSULTOR
+# ======================================================
+path(
+    "tablero-control/",
+    views.tablero_control,
+    name="tablero_control",
+),
+
 ]

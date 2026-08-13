@@ -397,4 +397,44 @@ class Consecutivo(models.Model):
 
         return self.consecutivo
     
-   
+class Asignacion(models.Model):
+
+    comunicacion = models.ForeignKey(
+        Comunicacion,
+        on_delete=models.CASCADE,
+        related_name="asignaciones"
+    )
+
+    responsable = models.ForeignKey(
+        Responsable,
+        on_delete=models.CASCADE,
+        related_name="asignaciones"
+    )
+
+    usuario_asignador = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    activa = models.BooleanField(
+        default=True
+    )
+
+    observaciones = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return (
+            f"{self.comunicacion} - "
+            f"{self.responsable}"
+        )  

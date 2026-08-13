@@ -2,64 +2,479 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container-fluid py-4">
 
-<div class="card-header bg-info text-white">
+    <!-- ================================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ================================================== -->
 
-Reportes
+    <div class="container-fluid">
 
-</div>
+        <div class="card-header bg-info text-white">
 
-<div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-primary">
-            <div class="card-body">
-                <h6>Entrantes</h6>
-                <h3>{{ entrantes|default:0 }}</h3>
+                <div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Reportes
+                    </h4>
+
+                    <small>
+                        Consulta y exportación de información del sistema
+                    </small>
+                </div>
+
             </div>
+
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-success">
-            <div class="card-body">
-                <h6>Salientes</h6>
-                <h3>{{ salientes|default:0 }}</h3>
+
+
+        <div class="card-body">
+
+
+            <!-- ================================================== -->
+            <!-- TARJETAS DE RESUMEN -->
+            <!-- ================================================== -->
+
+            <div class="row g-3 mb-4">
+
+                <!-- ENTRANTES -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="card border-primary shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <h6 class="text-muted mb-1">
+                                        Entrantes
+                                    </h6>
+
+                                    <h2 class="mb-0 text-primary">
+                                        {{ entrantes|default:0 }}
+                                    </h2>
+
+                                </div>
+
+                                <div class="fs-1 text-primary">
+                                    <i class="bi bi-inbox"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SALIENTES -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="card border-success shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <h6 class="text-muted mb-1">
+                                        Salientes
+                                    </h6>
+
+                                    <h2 class="mb-0 text-success">
+                                        {{ salientes|default:0 }}
+                                    </h2>
+
+                                </div>
+
+                                <div class="fs-1 text-success">
+                                    <i class="bi bi-send"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DELEGADOS -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="card border-warning shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <h6 class="text-muted mb-1">
+                                        Delegados
+                                    </h6>
+
+                                    <h2 class="mb-0 text-warning">
+                                        {{ delegados|default:0 }}
+                                    </h2>
+
+                                </div>
+
+                                <div class="fs-1 text-warning">
+                                    <i class="bi bi-person-check"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PENDIENTES -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="card border-danger shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <h6 class="text-muted mb-1">
+                                        Pendientes
+                                    </h6>
+
+                                    <h2 class="mb-0 text-danger">
+                                        {{ pendientes|default:0 }}
+                                    </h2>
+
+                                </div>
+
+                                <div class="fs-1 text-danger">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-warning">
-            <div class="card-body">
-                <h6>Delegados</h6>
-                <h3>{{ delegados|default:0 }}</h3>
+
+
+            <!-- ================================================== -->
+            <!-- INFORMACIÓN -->
+            <!-- ================================================== -->
+
+            <div class="alert alert-light border mb-4">
+
+                <div class="d-flex align-items-start">
+
+                    <i class="bi bi-info-circle text-info fs-4 me-3"></i>
+
+                    <div>
+
+                        <h6 class="mb-1">
+                            Centro de reportes
+                        </h6>
+
+                        <p class="mb-0 text-muted">
+
+                            Desde esta sección puede consultar el consolidado
+                            de radicados y descargar la información de
+                            radicados y consecutivos en formato Excel.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-danger">
-            <div class="card-body">
-                <h6>Pendientes</h6>
-                <h3>{{ pendientes|default:0 }}</h3>
+
+
+            <!-- ================================================== -->
+            <!-- REPORTES Y CONSULTAS -->
+            <!-- ================================================== -->
+
+            <div class="row g-4">
+
+
+                <!-- ================================================== -->
+                <!-- RADICADOS -->
+                <!-- ================================================== -->
+
+                <div class="col-lg-3">
+
+                    <div class="card border-primary shadow-sm h-100">
+
+                        <div class="card-header bg-primary text-white">
+
+                            <h5 class="mb-0">
+
+                                <i class="bi bi-journal-text me-2"></i>
+
+                                Radicados
+
+                            </h5>
+
+                        </div>
+
+
+                        <div class="card-body">
+
+                            <p class="text-muted">
+
+                                Consulte el consolidado de comunicaciones
+                                de entrada que cuentan con número de
+                                radicado.
+
+                            </p>
+
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <!-- CONSOLIDADO -->
+
+                                <a
+                                    href="{% url 'home:consolidado_radicados' %}"
+                                    class="btn btn-primary"
+                                >
+
+                                    <i class="bi bi-table me-1"></i>
+
+                                    Consultar radicados
+
+                                </a>
+
+
+                                <!-- EXCEL -->
+
+                                <a
+                                    href="{% url 'home:exportar_radicados_excel' %}"
+                                    class="btn btn-outline-success"
+                                >
+
+                                    <i class="bi bi-file-earmark-excel me-1"></i>
+
+                                    Exportar Excel
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================== -->
+                <!-- CONSECUTIVOS -->
+                <!-- ================================================== -->
+
+                <div class="col-lg-6">
+
+                    <div class="card border-success shadow-sm h-100">
+
+                        <div class="card-header bg-success text-white">
+
+                            <h5 class="mb-0">
+
+                                <i class="bi bi-list-ol me-2"></i>
+
+                                Consecutivos
+
+                            </h5>
+
+                        </div>
+
+
+                        <div class="card-body">
+
+                            <p class="text-muted">
+
+                                Consulte y descargue la información de los
+                                consecutivos generados por los usuarios
+                                del sistema.
+
+                            </p>
+
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <!-- CONSULTA -->
+
+                                <a
+                                    href="{% url 'home:consecutivos_admin' %}"
+                                    class="btn btn-success"
+                                >
+
+                                    <i class="bi bi-table me-1"></i>
+
+                                    Consultar consecutivos
+
+                                </a>
+
+
+                                <!-- EXCEL -->
+
+                                <a
+                                    href="{% url 'home:exportar_consecutivos_excel' %}"
+                                    class="btn btn-outline-success"
+                                >
+
+                                    <i class="bi bi-file-earmark-excel me-1"></i>
+
+                                    Exportar Excel
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
+
+
+            <!-- ================================================== -->
+            <!-- EXPORTACIÓN GENERAL -->
+            <!-- ================================================== -->
+
+            <div class="card border-secondary shadow-sm mt-4">
+
+                <div class="card-header">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-download me-2"></i>
+
+                        Exportaciones
+
+                    </h5>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-6">
+
+                            <div class="d-flex align-items-center">
+
+                                <div class="me-3 fs-2 text-primary">
+
+                                    <i class="bi bi-file-earmark-spreadsheet"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <h6 class="mb-1">
+                                        Radicados
+                                    </h6>
+
+                                    <small class="text-muted">
+                                        Archivo Excel con el consolidado
+                                        de radicados.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="{% url 'home:exportar_radicados_excel' %}"
+                                class="btn btn-outline-primary mt-3"
+                            >
+
+                                <i class="bi bi-download me-1"></i>
+
+                                Descargar Radicados
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="d-flex align-items-center">
+
+                                <div class="me-3 fs-2 text-success">
+
+                                    <i class="bi bi-file-earmark-spreadsheet"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <h6 class="mb-1">
+                                        Consecutivos
+                                    </h6>
+
+                                    <small class="text-muted">
+                                        Archivo Excel con la secuencia
+                                        global de consecutivos.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <a
+                                href="{% url 'home:exportar_consecutivos_excel' %}"
+                                class="btn btn-outline-success mt-3"
+                            >
+
+                                <i class="bi bi-download me-1"></i>
+
+                                Descargar Consecutivos
+
+                            </a>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
         </div>
+
     </div>
-</div>
-
-<p>
-
-Aquí se generarán los reportes en Excel y estadísticas del flujo operativo.
-
-</p>
-
-<button class="btn btn-success">
-
-Exportar Excel
-
-</button>
-
-</div>
 
 </div>
 

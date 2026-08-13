@@ -1,33 +1,47 @@
 {% extends 'base.html' %}
 
+{% block title %}
+    Entrada - Transacción
+{% endblock %}
+
+
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
 
-    <h2>Correos entrantes</h2>
+    <div>
+        <h2>Correos entrantes</h2>
+
+        <small class="text-muted">
+            Comunicaciones remitidas por el Administrador a Transacción
+        </small>
+    </div>
 
     <div>
 
         <button
-    id="btnRemitir"
-    class="btn btn-warning me-2"
-    disabled>
+            id="btnDelegar"
+            type="button"
+            class="btn btn-success me-2"
+            disabled
+        >
+            <i class="bi bi-people"></i>
+            Delegar seleccionados
+        </button>
 
-    <i class="bi bi-send"></i>
-    Remitir a Transacción
-
-</button>
-
-        <form method="post"
-              action="{% url 'home:sincronizar_correo' %}"
-              class="d-inline">
+        <form
+            method="post"
+            action="{% url 'home:sincronizar_correo' %}"
+            class="d-inline"
+        >
 
             {% csrf_token %}
 
             <input
                 type="hidden"
                 name="next"
-                value="{{ request.path }}">
+                value="{{ request.path }}"
+            >
 
             <button class="btn btn-primary">
 
@@ -43,11 +57,16 @@
 </div>
 
 
+<!-- ====================================================== -->
+<!-- TABLA -->
+<!-- ====================================================== -->
+
 <div class="table-responsive">
 
 <table
     id="tablaCorreos"
-    class="table table-striped table-bordered table-hover w-100">
+    class="table table-striped table-bordered table-hover w-100"
+>
 
     <thead class="table-primary">
 
@@ -57,7 +76,8 @@
 
                 <input
                     type="checkbox"
-                    id="checkTodos">
+                    id="checkTodos"
+                >
 
             </th>
 
@@ -69,123 +89,234 @@
 
             <th>Asunto</th>
 
-            <th class="text-center">Adjuntos</th>
-            <th>Evidencia</th>
-            <th>Estado</th>
+            <th class="text-center">
+                Adjuntos
+            </th>
 
-            <th>Delegado a</th>
+            <th class="text-center">
+                Evidencia
+            </th>
+
+            <th>
+                Estado
+            </th>
+
+            <th style="min-width:300px;">
+                Responsables
+            </th>
 
         </tr>
 
     </thead>
 
+
     <tbody>
 
-{% for correo in comunicaciones %}
+    {% for correo in comunicaciones %}
 
-<tr>
+    <tr>
 
-    <td>
+        <!-- ================================================== -->
+        <!-- SELECCIONAR COMUNICACIÓN -->
+        <!-- ================================================== -->
 
-    <input
-        type="checkbox"
-        class="form-check-input checkCorreo"
-        value="{{ correo.id }}">
+        <td class="text-center">
 
-</td>
+            <input
+                type="checkbox"
+                class="form-check-input checkCorreo"
+                value="{{ correo.id }}"
+            >
 
-    <td>
-        {% if correo.radicado %}
-            <span class="badge text-bg-success">
-                {{ correo.radicado }}
-            </span>
-        {% else %}
-            —
-        {% endif %}
-    </td>
+        </td>
 
-    <td>
-        {{ correo.fecha|date:"d/m/Y H:i" }}
-    </td>
 
-    <td>
-        {{ correo.remitente }}
-    </td>
+        <!-- ================================================== -->
+        <!-- RADICADO -->
+        <!-- ================================================== -->
 
-    <td>
+        <td>
 
-        {{ correo.asunto|default:"(Sin asunto)" }}
+            {% if correo.radicado %}
 
-    </td>
+                <span class="badge text-bg-success" style="color:red;">
 
-    <td class="text-center">
+                    {{ correo.radicado }}
 
-        {% if correo.tiene_adjuntos %}
-
-            <i class="bi bi-paperclip fs-5 text-primary"></i>
-
-            {% if correo.adjuntos.count %}
-                <span class="badge bg-primary">
-                    {{ correo.adjuntos.count }}
                 </span>
+
+            {% else %}
+
+                —
+
             {% endif %}
 
-        {% else %}
+        </td>
 
-            —
 
-        {% endif %}
+        <!-- ================================================== -->
+        <!-- FECHA -->
+        <!-- ================================================== -->
 
-    </td>
+        <td>
 
-    <td class="text-center">
+            {{ correo.fecha|date:"d/m/Y H:i" }}
 
-        {% if correo.evidencia %}
+        </td>
 
-            <a href="{{ correo.evidencia.url }}"
-               target="_blank"
-               class="btn btn-sm btn-danger">
 
-                <i class="bi bi-file-earmark-pdf"></i>
+        <!-- ================================================== -->
+        <!-- REMITENTE -->
+        <!-- ================================================== -->
 
-            </a>
+        <td>
 
-        {% else %}
+            {{ correo.remitente }}
 
-            <span class="text-muted">
-                No generado
-            </span>
+        </td>
 
-        {% endif %}
 
-    </td>
+        <!-- ================================================== -->
+        <!-- ASUNTO -->
+        <!-- ================================================== -->
 
-    <td>
+        <td>
 
-        <span class="badge text-bg-secondary">
-            {{ correo.get_estado_display }}
-        </span>
+            {{ correo.asunto|default:"(Sin asunto)" }}
 
-    </td>
+        </td>
 
-    <td style="min-width:230px;">
 
-<select
+        <!-- ================================================== -->
+        <!-- ADJUNTOS -->
+        <!-- ================================================== -->
+
+        <td class="text-center">
+
+            {% if correo.tiene_adjuntos %}
+
+                <i class="bi bi-paperclip fs-5 text-primary"></i>
+
+                {% if correo.adjuntos.count %}
+
+                    <span class="badge bg-primary">
+
+                        {{ correo.adjuntos.count }}
+
+                    </span>
+
+                {% endif %}
+
+            {% else %}
+
+                —
+
+            {% endif %}
+
+        </td>
+
+
+        <!-- ================================================== -->
+        <!-- EVIDENCIA DRIVE -->
+        <!-- ================================================== -->
+
+        <td class="text-center">
+
+            {% if correo.drive_url %}
+
+                <a
+                    href="{{ correo.drive_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-sm btn-danger"
+                    title="Abrir evidencia en Google Drive"
+                >
+
+                    <i class="bi bi-file-earmark-pdf"></i>
+
+                </a>
+
+            {% else %}
+
+                <span class="text-muted">
+
+                    No disponible
+
+                </span>
+
+            {% endif %}
+
+        </td>
+
+
+        <!-- ================================================== -->
+        <!-- ESTADO -->
+        <!-- ================================================== -->
+
+        <td>
+
+            {% if correo.estado == "DELEGADO" %}
+
+                <span class="badge bg-success">
+
+                    Delegado
+
+                </span>
+
+            {% elif correo.estado == "EN_PROCESO" %}
+
+                <span class="badge bg-warning text-dark">
+
+                    En proceso
+
+                </span>
+
+            {% elif correo.estado == "FINALIZADO" %}
+
+                <span class="badge bg-dark">
+
+                    Finalizado
+
+                </span>
+
+            {% else %}
+
+                <span class="badge bg-secondary">
+
+                    {{ correo.get_estado_display }}
+
+                </span>
+
+            {% endif %}
+
+        </td>
+
+
+        <!-- ================================================== -->
+        <!-- RESPONSABLES -->
+        <!-- ================================================== -->
+
+        <td>
+
+            <select
     class="form-select form-select-sm responsable-select"
-    data-id="{{ correo.id }}">
-
-    <option value="">
-        -- Sin asignar --
-    </option>
+    data-comunicacion="{{ correo.id }}"
+    multiple
+    size="5"
+>
 
     {% for responsable in responsables %}
 
         <option
             value="{{ responsable.id }}"
 
-            {% if correo.responsable_id == responsable.id %}
-                selected
-            {% endif %}>
+            {% for asignacion in correo.asignaciones.all %}
+                {% if asignacion.activa and asignacion.responsable_id == responsable.id %}
+                    selected
+                {% endif %}
+            {% endfor %}
+
+        >
 
             {{ responsable.nombre }}
 
@@ -195,25 +326,44 @@
 
 </select>
 
-</td>
+<small class="text-muted">
+    Puede seleccionar uno o varios responsables.
+    Mantenga <strong>Ctrl</strong> presionado para seleccionar varios.
+</small>
 
-</tr>
+            <small class="text-muted">
 
-{% empty %}
+                Mantenga <strong>Ctrl</strong> presionado para seleccionar varios.
 
-<tr>
+            </small>
 
-<td colspan="9" class="text-center">
+        </td>
 
-No existen registros.
+    </tr>
 
-</td>
 
-</tr>
+    {% empty %}
 
-{% endfor %}
+    <tr>
 
-</tbody>
+        <td
+            colspan="9"
+            class="text-center py-4"
+        >
+
+            <span class="text-muted">
+
+                No existen comunicaciones remitidas a Transacción.
+
+            </span>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
 
 </table>
 
@@ -222,13 +372,28 @@ No existen registros.
 {% endblock %}
 
 
+
 {% block extra_css %}
 
 <link
-rel="stylesheet"
-href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
+    rel="stylesheet"
+    href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css"
+>
+
+<style>
+
+.responsable-select {
+    min-width: 280px;
+}
+
+.responsable-select option {
+    padding: 5px;
+}
+
+</style>
 
 {% endblock %}
+
 
 
 {% block extra_js %}
@@ -239,9 +404,15 @@ href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css">
 
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
 
+
 <script>
 
 $(document).ready(function () {
+
+
+    // ======================================================
+    // DATATABLES
+    // ======================================================
 
     $('#tablaCorreos').DataTable({
 
@@ -250,11 +421,13 @@ $(document).ready(function () {
         pageLength: 10,
 
         lengthMenu: [
-            [10,25,50,100,-1],
-            [10,25,50,100,"Todos"]
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, "Todos"]
         ],
 
-        order: [[2,'desc']],
+        order: [
+            [2, 'desc']
+        ],
 
         language: {
             url: 'https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json'
@@ -262,86 +435,227 @@ $(document).ready(function () {
 
     });
 
-});
 
+    // ======================================================
+    // SELECCIONAR TODOS
+    // ======================================================
 
-//==============================
-// Seleccionar todos
-//==============================
+    $("#checkTodos").on("change", function () {
 
-$("#checkTodos").on("change", function () {
+        $(".checkCorreo").prop(
+            "checked",
+            $(this).prop("checked")
+        );
 
-    $(".checkCorreo").prop(
-        "checked",
-        $(this).prop("checked")
-    );
+        actualizarBoton();
 
-    actualizarBoton();
-
-});
-
-
-//==============================
-// Selección individual
-//==============================
-
-$(document).on("change",".checkCorreo",function(){
-
-    actualizarBoton();
-
-});
-
-
-//==============================
-// Habilita botón
-//==============================
-
-function actualizarBoton(){
-
-    let cantidad = $(".checkCorreo:checked").length;
-
-    $("#btnRemitir").prop(
-        "disabled",
-        cantidad === 0
-    );
-
-}
-
-
-$("#btnRemitir").click(function () {
-
-    let ids = [];
-
-    $(".checkCorreo:checked").each(function () {
-        ids.push($(this).val());
     });
 
-    if (ids.length === 0)
-        return;
 
-    $.ajax({
+    // ======================================================
+    // SELECCIÓN INDIVIDUAL
+    // ======================================================
 
-        url: "{% url 'home:remitir_transaccion' %}",
+    $(document).on(
+        "change",
+        ".checkCorreo",
+        function () {
 
-        method: "POST",
+            actualizarBoton();
 
-        data: {
+        }
+    );
 
-            ids: ids,
 
-            csrfmiddlewaretoken: "{{ csrf_token }}"
+    // ======================================================
+    // ACTUALIZAR BOTÓN
+    // ======================================================
 
-        },
+    function actualizarBoton() {
 
-        success: function () {
+        let cantidad = $(".checkCorreo:checked").length;
 
-            location.reload();
+        $("#btnDelegar").prop(
+            "disabled",
+            cantidad === 0
+        );
+
+    }
+
+
+    // ======================================================
+    // DELEGAR
+    // ======================================================
+
+    $("#btnDelegar").on("click", function () {
+
+        let asignaciones = [];
+
+
+        // --------------------------------------------------
+        // RECORRER COMUNICACIONES SELECCIONADAS
+        // --------------------------------------------------
+
+        $(".checkCorreo:checked").each(function () {
+
+            let comunicacionId = $(this).val();
+
+            let select = $(
+                '.responsable-select[data-comunicacion="' +
+                comunicacionId +
+                '"]'
+            );
+
+
+            // ----------------------------------------------
+            // RESPONSABLES SELECCIONADOS
+            // ----------------------------------------------
+
+            let responsablesSeleccionados =
+                select.val() || [];
+
+
+            // ----------------------------------------------
+            // SI NO SE SELECCIONÓ RESPONSABLE
+            // ----------------------------------------------
+
+            if (responsablesSeleccionados.length === 0) {
+
+                return;
+
+            }
+
+
+            // ----------------------------------------------
+            // CREAR ASIGNACIONES
+            // ----------------------------------------------
+
+            responsablesSeleccionados.forEach(
+                function (responsableId) {
+
+                    asignaciones.push(
+                        comunicacionId +
+                        ":" +
+                        responsableId
+                    );
+
+                }
+            );
+
+        });
+
+
+        // ==================================================
+        // VALIDACIÓN
+        // ==================================================
+
+        if (asignaciones.length === 0) {
+
+            alert(
+                "Seleccione al menos un responsable " +
+                "para las comunicaciones seleccionadas."
+            );
+
+            return;
 
         }
 
+
+        // ==================================================
+        // CONFIRMACIÓN
+        // ==================================================
+
+        if (
+            !confirm(
+                "¿Desea delegar las comunicaciones " +
+                "a los responsables seleccionados?"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        // ==================================================
+        // AJAX
+        // ==================================================
+
+        $.ajax({
+
+            url: "{% url 'home:asignar_responsables' %}",
+
+            method: "POST",
+
+            traditional: true,
+
+            data: {
+
+                asignaciones: asignaciones,
+
+                csrfmiddlewaretoken:
+                    "{{ csrf_token }}"
+
+            },
+
+
+            // ==================================================
+            // ÉXITO
+            // ==================================================
+
+            success: function (respuesta) {
+
+                if (respuesta.ok) {
+
+                    alert(
+                        respuesta.mensaje
+                    );
+
+                    location.reload();
+
+                } else {
+
+                    alert(
+                        respuesta.mensaje ||
+                        "No fue posible realizar la delegación."
+                    );
+
+                }
+
+            },
+
+
+            // ==================================================
+            // ERROR
+            // ==================================================
+
+            error: function (xhr) {
+
+                console.error(xhr);
+
+                let mensaje =
+                    "Ocurrió un error al realizar la delegación.";
+
+                if (
+                    xhr.responseJSON &&
+                    xhr.responseJSON.mensaje
+                ) {
+
+                    mensaje =
+                        xhr.responseJSON.mensaje;
+
+                }
+
+                alert(mensaje);
+
+            }
+
+        });
+
     });
 
 });
+
 </script>
 
 {% endblock %}

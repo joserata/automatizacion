@@ -1,165 +1,60 @@
 {% extends 'base.html' %}
 
+{% block title %}
+    Consecutivos - Administrador
+{% endblock %}
+
 {% block content %}
 
 <div class="container-fluid">
 
-    <!-- ================================================== -->
-    <!-- ENCABEZADO -->
-    <!-- ================================================== -->
-
     <div class="container-fluid">
 
         <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
 
-            <h5 class="mb-0">
-                Consecutivos - Administrador
-            </h5>
+                <div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-lock"></i>
+                        Consecutivos - Administrador
+                    </h4>
 
+                    <small>
+                        Consulta general de consecutivos generados
+                    </small>
+                </div>
+
+                <span class="badge bg-light text-dark">
+                    {{ consecutivos|length }} registros
+                </span>
+
+            </div>
         </div>
 
         <div class="card-body">
-
-            <!-- ================================================== -->
-            <!-- TARJETAS -->
-            <!-- ================================================== -->
-
-            <div class="row g-3 mb-4">
-
-                <div class="col-md-3">
-
-                    <div class="card border-primary shadow-sm">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Total
-                            </h6>
-
-                            <h3>
-                                {{ consecutivos|length }}
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-3">
-
-                    <div class="card border-success shadow-sm">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Último consecutivo
-                            </h6>
-
-                            <h5>
-
-                                {% if consecutivos %}
-                                    {{ consecutivos.0.consecutivo }}
-                                {% else %}
-                                    No existen
-                                {% endif %}
-
-                            </h5>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-3">
-
-                    <div class="card border-info shadow-sm">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Usuarios
-                            </h6>
-
-                            <h3>
-
-                                {% regroup consecutivos by usuario as usuarios %}
-
-                                {{ usuarios|length }}
-
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-3">
-
-                    <div class="card border-warning shadow-sm">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Estado
-                            </h6>
-
-                            <h5 class="text-success">
-                                Control global activo
-                            </h5>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ================================================== -->
-            <!-- TABLA -->
-            <!-- ================================================== -->
 
             <div class="table-responsive">
 
                 <table
                     id="tablaConsecutivosAdmin"
-                    class="table table-striped table-hover table-bordered align-middle"
+                    class="table table-striped table-hover align-middle"
                     style="width:100%;"
                 >
 
                     <thead class="table-dark">
 
                         <tr>
-
+                            <th>#</th>
                             <th>Consecutivo</th>
-
-                            <th>Usuario</th>
-
                             <th>Fecha</th>
-
+                            <th>Usuario</th>
                             <th>Dirigido a</th>
-
                             <th>Asunto</th>
-
                             <th>Funcionario responsable</th>
-
                             <th>Caso Aranda</th>
-
-                            <th>Fecha envío</th>
-
                             <th>Tipo archivo / TRD</th>
-
                             <th>Ubicación</th>
-
                             <th>Archivado</th>
-
                         </tr>
 
                     </thead>
@@ -171,37 +66,29 @@
                         <tr>
 
                             <td>
+                                {{ forloop.counter }}
+                            </td>
 
+                            <td>
                                 <strong>
                                     {{ consecutivo.consecutivo }}
                                 </strong>
+                            </td>
 
+                            <td>
+                                {{ consecutivo.fecha|date:"d/m/Y" }}
                             </td>
 
                             <td>
 
                                 {% if consecutivo.usuario %}
-
-                                    <span class="badge bg-primary">
-
-                                        {{ consecutivo.usuario.username }}
-
-                                    </span>
-
+                                    {{ consecutivo.usuario.username }}
                                 {% else %}
-
-                                    <span class="badge bg-secondary">
-
+                                    <span class="text-muted">
                                         Sin usuario
-
                                     </span>
-
                                 {% endif %}
 
-                            </td>
-
-                            <td>
-                                {{ consecutivo.fecha|date:"d/m/Y" }}
                             </td>
 
                             <td>
@@ -218,20 +105,6 @@
 
                             <td>
                                 {{ consecutivo.caso_aranda|default:"-" }}
-                            </td>
-
-                            <td>
-
-                                {% if consecutivo.fecha_envio %}
-
-                                    {{ consecutivo.fecha_envio|date:"d/m/Y" }}
-
-                                {% else %}
-
-                                    -
-
-                                {% endif %}
-
                             </td>
 
                             <td>
@@ -252,7 +125,7 @@
 
                                 {% else %}
 
-                                    <span class="badge bg-secondary">
+                                    <span class="badge bg-warning text-dark">
                                         NO
                                     </span>
 
@@ -270,9 +143,7 @@
                                 colspan="11"
                                 class="text-center text-muted py-4"
                             >
-
                                 No existen consecutivos registrados.
-
                             </td>
 
                         </tr>
@@ -291,26 +162,21 @@
 
 </div>
 
-
-<!-- ====================================================== -->
-<!-- DATATABLES -->
-<!-- ====================================================== -->
-
-<link
-    rel="stylesheet"
-    href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css"
->
-
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+{% endblock %}
 
 
+{% block extra_js %}
+<script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js"></script>
 <script>
 
-document.addEventListener("DOMContentLoaded", function () {
+$(document).ready(function () {
 
-    new DataTable("#tablaConsecutivosAdmin", {
+    $('#tablaConsecutivosAdmin').DataTable({
+
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/2.3.2/i18n/es-ES.json'
+        },
 
         pageLength: 10,
 
@@ -320,41 +186,17 @@ document.addEventListener("DOMContentLoaded", function () {
         ],
 
         order: [
-            [0, "desc"]
+            [0, 'desc']
         ],
 
-        language: {
+        responsive: true,
 
-            search: "Buscar:",
-
-            lengthMenu:
-                "Mostrar _MENU_ registros",
-
-            info:
-                "Mostrando _START_ a _END_ de _TOTAL_ registros",
-
-            infoEmpty:
-                "No hay registros",
-
-            zeroRecords:
-                "No se encontraron resultados",
-
-            emptyTable:
-                "No existen consecutivos registrados",
-
-            paginate: {
-
-                first: "Primero",
-
-                last: "Último",
-
-                next: "Siguiente",
-
-                previous: "Anterior"
-
+        columnDefs: [
+            {
+                targets: 0,
+                searchable: false
             }
-
-        }
+        ]
 
     });
 

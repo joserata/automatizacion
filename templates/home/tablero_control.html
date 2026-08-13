@@ -1,0 +1,945 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<style>
+/* ==========================================================
+   SGDEA - TABLERO DE CONTROL CONSULTOR
+   Estilos específicos. La identidad principal viene de style.css
+   ========================================================== */
+
+.tablero-consultor {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px 28px 40px;
+    box-sizing: border-box;
+}
+
+/* ----------------------------------------------------------
+   CABECERA
+   ---------------------------------------------------------- */
+
+.tablero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 26px;
+}
+
+.tablero-eyebrow {
+    margin: 0 0 7px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    opacity: .65;
+}
+
+.tablero-header h1 {
+    margin: 0;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.tablero-subtitle {
+    margin: 9px 0 0;
+    max-width: 820px;
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: .68;
+}
+
+.tablero-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.tablero-btn {
+    border: 1px solid rgba(0,0,0,.12);
+    background: var(--bs-body-bg, #fff);
+    color: inherit;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.tablero-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 18px rgba(0,0,0,.08);
+}
+
+.tablero-btn-primary {
+    background: #17365d;
+    color: #fff;
+    border-color: #17365d;
+}
+
+/* ----------------------------------------------------------
+   KPI
+   ---------------------------------------------------------- */
+
+.tablero-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.tablero-kpi {
+    position: relative;
+    min-height: 132px;
+    padding: 20px;
+    border-radius: 16px;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid rgba(0,0,0,.07);
+    box-shadow: 0 5px 20px rgba(0,0,0,.045);
+    overflow: hidden;
+}
+
+.tablero-kpi::after {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    right: -30px;
+    bottom: -35px;
+    border-radius: 50%;
+    background: rgba(23,54,93,.055);
+}
+
+.tablero-kpi-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    opacity: .58;
+}
+
+.tablero-kpi-value {
+    margin-top: 10px;
+    font-size: 32px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.tablero-kpi-meta {
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .58;
+}
+
+/* ----------------------------------------------------------
+   GRID PRINCIPAL
+   ---------------------------------------------------------- */
+
+.tablero-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.tablero-card {
+    min-width: 0;
+    border-radius: 16px;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid rgba(0,0,0,.07);
+    box-shadow: 0 5px 20px rgba(0,0,0,.045);
+    overflow: hidden;
+}
+
+.tablero-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 19px 21px 10px;
+}
+
+.tablero-card-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.tablero-card-description {
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: .58;
+}
+
+.tablero-card-body {
+    padding: 12px 21px 21px;
+}
+
+.tablero-chart {
+    position: relative;
+    width: 100%;
+    height: 335px;
+}
+
+.tablero-chart-small {
+    height: 245px;
+}
+
+/* ----------------------------------------------------------
+   INDICADOR GERENCIAL
+   ---------------------------------------------------------- */
+
+.tablero-insight {
+    margin-top: 15px;
+    padding: 14px 15px;
+    border-radius: 11px;
+    background: rgba(23,54,93,.055);
+    border-left: 4px solid #17365d;
+}
+
+.tablero-insight-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    opacity: .6;
+}
+
+.tablero-insight-text {
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.55;
+    opacity: .78;
+}
+
+/* ----------------------------------------------------------
+   MÉTRICAS INFERIORES
+   ---------------------------------------------------------- */
+
+.tablero-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.tablero-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 13px 0;
+    border-bottom: 1px solid rgba(0,0,0,.07);
+}
+
+.tablero-metric:last-child {
+    border-bottom: 0;
+}
+
+.tablero-metric-name {
+    font-size: 13px;
+    opacity: .67;
+}
+
+.tablero-metric-value {
+    font-size: 19px;
+    font-weight: 800;
+}
+
+/* ----------------------------------------------------------
+   BARRA DE PROGRESO
+   ---------------------------------------------------------- */
+
+.tablero-progress {
+    height: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(0,0,0,.08);
+}
+
+.tablero-progress > div {
+    width: var(--value);
+    height: 100%;
+    border-radius: inherit;
+    background: #17365d;
+    transition: width .7s ease;
+}
+
+/* ----------------------------------------------------------
+   PIE
+   ---------------------------------------------------------- */
+
+.tablero-footer {
+    padding-top: 22px;
+    text-align: center;
+    font-size: 11px;
+    opacity: .45;
+}
+
+/* ----------------------------------------------------------
+   RESPONSIVE
+   ---------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+
+    .tablero-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tablero-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tablero-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .tablero-consultor {
+        padding: 18px 14px 30px;
+    }
+
+    .tablero-header {
+        flex-direction: column;
+    }
+
+    .tablero-actions {
+        width: 100%;
+    }
+
+    .tablero-btn {
+        flex: 1;
+    }
+
+    .tablero-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .tablero-chart {
+        height: 280px;
+    }
+}
+</style>
+
+
+<div class="tablero-consultor">
+
+    <!-- ======================================================
+         CABECERA
+         ====================================================== -->
+
+    <header class="tablero-header">
+
+        <div>
+
+            <p class="tablero-eyebrow">
+                SGDEA · PILOTO GERENCIAL
+            </p>
+
+            <h1>
+                Tablero de Control
+            </h1>
+
+            <p class="tablero-subtitle">
+                Vista ejecutiva para seguimiento de comunicaciones,
+                radicación, delegaciones y comportamiento operativo.
+            </p>
+
+        </div>
+
+        <div class="tablero-actions">
+
+            <button
+                class="tablero-btn"
+                type="button"
+                onclick="window.location.reload()"
+            >
+                ↻ Actualizar
+            </button>
+
+            <button
+                class="tablero-btn tablero-btn-primary"
+                type="button"
+                onclick="window.print()"
+            >
+                Exportar / Imprimir
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ======================================================
+         KPIs PRINCIPALES
+         ====================================================== -->
+
+    <section class="tablero-kpis">
+
+        <article class="tablero-kpi">
+
+            <div class="tablero-kpi-label">
+                Comunicaciones
+            </div>
+
+            <div class="tablero-kpi-value">
+                {{ total_comunicaciones|default:0 }}
+            </div>
+
+            <div class="tablero-kpi-meta">
+                Total gestionado por el sistema
+            </div>
+
+        </article>
+
+
+        <article class="tablero-kpi">
+
+            <div class="tablero-kpi-label">
+                Radicados
+            </div>
+
+            <div class="tablero-kpi-value">
+                {{ total_radicados|default:0 }}
+            </div>
+
+            <div class="tablero-kpi-meta">
+                Comunicaciones de entrada
+            </div>
+
+        </article>
+
+
+        <article class="tablero-kpi">
+
+            <div class="tablero-kpi-label">
+                Delegadas
+            </div>
+
+            <div class="tablero-kpi-value">
+                {{ total_delegadas|default:0 }}
+            </div>
+
+            <div class="tablero-kpi-meta">
+                Responsabilidades asignadas
+            </div>
+
+        </article>
+
+
+        <article class="tablero-kpi">
+
+            <div class="tablero-kpi-label">
+                Pendientes
+            </div>
+
+            <div class="tablero-kpi-value">
+                {{ total_pendientes|default:0 }}
+            </div>
+
+            <div class="tablero-kpi-meta">
+                Casos que requieren atención
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ======================================================
+         GRÁFICOS PRINCIPALES
+         ====================================================== -->
+
+    <section class="tablero-main-grid">
+
+
+        <!-- EVOLUCIÓN -->
+
+        <article class="tablero-card">
+
+            <div class="tablero-card-header">
+
+                <div>
+
+                    <h2 class="tablero-card-title">
+                        Evolución de la gestión
+                    </h2>
+
+                    <p class="tablero-card-description">
+                        Tendencia de comunicaciones procesadas.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tablero-card-body">
+
+                <div class="tablero-chart">
+
+                    <canvas id="tendenciaChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- ESTADO -->
+
+        <article class="tablero-card">
+
+            <div class="tablero-card-header">
+
+                <div>
+
+                    <h2 class="tablero-card-title">
+                        Estado operativo
+                    </h2>
+
+                    <p class="tablero-card-description">
+                        Distribución actual de las comunicaciones.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tablero-card-body">
+
+                <div class="tablero-chart tablero-chart-small">
+
+                    <canvas id="estadoChart"></canvas>
+
+                </div>
+
+                <div class="tablero-insight">
+
+                    <div class="tablero-insight-label">
+                        Lectura gerencial
+                    </div>
+
+                    <p class="tablero-insight-text">
+                        Permite identificar rápidamente volumen,
+                        carga pendiente y nivel de delegación para
+                        apoyar la toma de decisiones.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ======================================================
+         INDICADORES DETALLADOS
+         ====================================================== -->
+
+    <section class="tablero-bottom-grid">
+
+
+        <!-- RADICACIÓN -->
+
+        <article class="tablero-card">
+
+            <div class="tablero-card-header">
+
+                <div>
+
+                    <h2 class="tablero-card-title">
+                        Radicación
+                    </h2>
+
+                    <p class="tablero-card-description">
+                        Indicadores de entrada.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tablero-card-body">
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Radicados
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_radicados|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Sin radicar
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_sin_radicado|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Nivel de radicación
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ porcentaje_radicacion|default:0 }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-progress">
+
+                    <div
+                        style="--value: {{ porcentaje_radicacion|default:0 }}%;"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- DELEGACIÓN -->
+
+        <article class="tablero-card">
+
+            <div class="tablero-card-header">
+
+                <div>
+
+                    <h2 class="tablero-card-title">
+                        Delegación
+                    </h2>
+
+                    <p class="tablero-card-description">
+                        Distribución de responsabilidades.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tablero-card-body">
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Comunicaciones delegadas
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_delegadas|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Asignaciones activas
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ asignaciones_activas|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Responsables
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ responsables_activos|default:0 }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- CONSECUTIVOS -->
+
+        <article class="tablero-card">
+
+            <div class="tablero-card-header">
+
+                <div>
+
+                    <h2 class="tablero-card-title">
+                        Consecutivos
+                    </h2>
+
+                    <p class="tablero-card-description">
+                        Gestión documental de salida.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tablero-card-body">
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Generados
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_consecutivos|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Archivados
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_archivados|default:0 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="tablero-metric">
+
+                    <span class="tablero-metric-name">
+                        Pendientes de archivo
+                    </span>
+
+                    <strong class="tablero-metric-value">
+                        {{ total_pendientes_archivo|default:0 }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ======================================================
+         PIE
+         ====================================================== -->
+
+    <div class="tablero-footer">
+
+        SGDEA · Tablero de Control · Vista Consultor
+
+    </div>
+
+</div>
+
+
+<script>
+/* ==========================================================
+   DATOS DESDE DJANGO
+   ========================================================== */
+
+const tendenciaData =
+    {{ tendencia_mensual|default:"[]"|safe }};
+
+const estadoData =
+    {{ estado_comunicaciones|default:"[]"|safe }};
+
+const tendencia =
+    Array.isArray(tendenciaData)
+        ? tendenciaData
+        : [];
+
+const estados =
+    Array.isArray(estadoData)
+        ? estadoData
+        : [];
+
+
+/* ==========================================================
+   GRÁFICO DE TENDENCIA
+   ========================================================== */
+
+const tendenciaCanvas =
+    document.getElementById("tendenciaChart");
+
+if (tendenciaCanvas) {
+
+    new Chart(tendenciaCanvas, {
+
+        type: "line",
+
+        data: {
+
+            labels: tendencia.map(
+                item => item.mes
+            ),
+
+            datasets: [
+
+                {
+                    label: "Comunicaciones",
+
+                    data: tendencia.map(
+                        item => item.cantidad
+                    ),
+
+                    borderWidth: 3,
+
+                    tension: 0.35,
+
+                    fill: true,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 7
+                }
+
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            interaction: {
+
+                intersect: false,
+
+                mode: "index"
+            },
+
+            plugins: {
+
+                legend: {
+
+                    position: "bottom",
+
+                    labels: {
+
+                        usePointStyle: true,
+
+                        boxWidth: 7,
+
+                        padding: 18
+                    }
+                }
+            },
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    ticks: {
+
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+/* ==========================================================
+   GRÁFICO DE ESTADOS
+   ========================================================== */
+
+const estadoCanvas =
+    document.getElementById("estadoChart");
+
+if (estadoCanvas) {
+
+    new Chart(estadoCanvas, {
+
+        type: "doughnut",
+
+        data: {
+
+            labels: estados.map(
+                item => item.estado
+            ),
+
+            datasets: [
+
+                {
+                    data: estados.map(
+                        item => item.cantidad
+                    ),
+
+                    borderWidth: 2
+                }
+
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            cutout: "68%",
+
+            plugins: {
+
+                legend: {
+
+                    position: "bottom",
+
+                    labels: {
+
+                        usePointStyle: true,
+
+                        padding: 15
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+{% endblock %}

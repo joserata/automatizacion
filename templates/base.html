@@ -221,7 +221,45 @@
 </div>
 {% endif %}
 
+<!-- TABLERO DE CONTROL -->
+{% if request.user.groups.all %}
+    {% for grupo in request.user.groups.all %}
+        {% if grupo.name == "Consultor" %}
 
+        <div class="section">
+
+            <div class="header">
+                Gestión Gerencial
+            </div>
+
+            <div class="items">
+
+                <a href="{% url 'home:tablero_control' %}" class="item-link">
+
+                    <div class="item">
+
+                        <span
+                            class="material-symbols-outlined icon"
+                            translate="no"
+                        >
+                            dashboard
+                        </span>
+
+                        <div class="text">
+                            Tablero de Control
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+    {% endfor %}
+{% endif %}
 <!-- TRANSACCIONES -->
 <div class="section">
     <div class="header">Transacciones</div>
@@ -301,38 +339,69 @@
     </div>
 </div>
 
-
 <!-- ACCIONES -->
+{% if request.user.is_superuser %}
+
 <div class="section">
-    <div class="header">Acciones</div>
+
+    <div class="header">
+        Acciones
+    </div>
 
     <div class="items">
 
-        {% if request.user.is_superuser %}
+        <!-- REGLAS -->
         <a href="{% url 'home:reglas' %}" class="item-link">
-            <div class="item">
-                <span class="material-symbols-outlined icon" translate="no">pending_actions</span>
-                <div class="text">Reglas</div>
-            </div>
-        </a>
-        {% endif %}
 
-        <a href="{% url 'home:reportes' %}" class="item-link">
             <div class="item">
-                <span class="material-symbols-outlined icon" translate="no">explore</span>
-                <div class="text">Reportes</div>
+
+                <span
+                    class="material-symbols-outlined icon"
+                    translate="no"
+                >
+                    pending_actions
+                </span>
+
+                <div class="text">
+                    Reglas
+                </div>
+
             </div>
+
         </a>
+
+        <!-- REPORTES -->
+        <a href="{% url 'home:reportes' %}" class="item-link">
+
+            <div class="item">
+
+                <span
+                    class="material-symbols-outlined icon"
+                    translate="no"
+                >
+                    explore
+                </span>
+
+                <div class="text">
+                    Reportes
+                </div>
+
+            </div>
+
+        </a>
+        
 
     </div>
+
 </div>
-                            </div>
+
+{% endif %}
+
+</div>
                         </div>
                     </div>
                 </nav>
             </div>
-
-
 
             <!-- ============================================== -->
             <!-- CONTENIDO -->
